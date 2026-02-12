@@ -12,6 +12,7 @@ import PropertyDetail from '../components/PropertyDetail';
 import ReservationPage from '../components/ReservationPage';
 import ConfirmationPage from '../components/ConfirmationPage';
 import AboutPage from '../components/AboutPage';
+import Ventas from "../components/Ventas";
 
 // Auth
 import LoginPage from '../components/auth/LoginPage';
@@ -38,6 +39,7 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/confirmacion" element={<ConfirmationPage />} />
           <Route path="/sobre-nosotros" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
+          <Route path="/ventas" element={<Ventas />} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

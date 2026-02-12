@@ -9,6 +9,7 @@ export const translations = {
       about: "Nosotros",
       login: "Iniciar Sesión",
       logout: "Cerrar Sesión",
+      sales: "Ventas", // CORREGIDO (Antes decía navbar.sales)
       profile: "Mi Perfil"
     },
     loginPage: {
@@ -147,6 +148,7 @@ export const translations = {
       about: "About Us",
       login: "Login",
       logout: "Logout",
+      sales: "sales", 
       profile: "My Profile"
     },
     loginPage: {
@@ -285,6 +287,7 @@ export const translations = {
       about: "À propos",
       login: "Connexion",
       logout: "Déconnexion",
+      sales: "vente", // AGREGADO (Significa Bienes Raíces)
       profile: "Mon Profil"
     },
     loginPage: {

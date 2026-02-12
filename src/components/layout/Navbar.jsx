@@ -3,7 +3,7 @@
  * ======================================================================== */
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, User, Globe } from 'lucide-react'; // Agregué Globe para decorar
+import { Menu, X, LogOut, User, Globe, Star } from 'lucide-react'; // Agregué Star
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSelector from '../LanguageSelector';
 
@@ -16,6 +16,8 @@ import logo from '../../assets/logo-bonanza.jpeg';
 const NAV_ITEMS = [
   { path: '/', key: 'navbar.home' },
   { path: '/propiedades', key: 'navbar.properties' },
+  // AQUÍ AGREGAMOS LA NUEVA SECCIÓN CON UNA BANDERA "ESPECIAL"
+  { path: '/ventas', key: 'navbar.sales', special: true }, 
   { path: '/sobre-nosotros', key: 'navbar.about' }
 ];
 
@@ -64,14 +66,16 @@ const Navbar = ({ user, onLogout }) => {
                     }} 
                   />
               </div>
-              {/* Ajusté el texto para que se adapte mejor en móviles muy pequeños */}
-              <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md">
+              <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md hidden sm:block">
                 Reserva La Bonanza
-                </span>
+              </span>
+              <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md sm:hidden">
+                Bonanza
+              </span>
             </Link>
 
             {/* B. MENÚ DE ESCRITORIO (Hidden on Mobile) */}
-            <div className="hidden md:flex space-x-6 items-center">
+            <div className="hidden md:flex space-x-4 items-center">
               
               {/* Selector de Idioma */}
               <div className="mr-2">
@@ -80,19 +84,41 @@ const Navbar = ({ user, onLogout }) => {
               
               
               {/* Enlaces de Navegación - Escritorio */}
-              {NAV_ITEMS.map((item) => (
-                <Link 
-                  key={item.path}
-                  to={item.path} 
-                  className={`text-base font-bold transition-colors duration-200 px-3 py-2 rounded-md ${
-                    isActiveLink(item.path) 
-                      ? 'text-indigo-600 bg-indigo-50' 
-                      : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {t(item.key)}
-                </Link>
-              ))}
+              {NAV_ITEMS.map((item) => {
+                const active = isActiveLink(item.path);
+                
+                // Estilos especiales si es el botón de VENTAS
+                if (item.special) {
+                    return (
+                        <Link 
+                          key={item.path}
+                          to={item.path} 
+                          className={`flex items-center gap-1 px-4 py-2 rounded-full font-bold transition-all duration-300 border ${
+                            active 
+                              ? 'bg-amber-100 text-amber-700 border-amber-300 shadow-sm' 
+                              : 'bg-white text-amber-600 border-amber-200 hover:bg-amber-50 hover:shadow-md'
+                          }`}
+                        >
+                          <Star size={16} className={active ? "fill-amber-700" : "fill-amber-600"} />
+                          {t(item.key) || "Ventas"} {/* Fallback por si no hay traducción */}
+                        </Link>
+                    );
+                }
+
+                return (
+                    <Link 
+                    key={item.path}
+                    to={item.path} 
+                    className={`text-base font-bold transition-colors duration-200 px-3 py-2 rounded-md ${
+                        active 
+                        ? 'text-indigo-600 bg-indigo-50' 
+                        : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                    }`}
+                    >
+                    {t(item.key)}
+                    </Link>
+                );
+              })}
               
               {/* Separador Vertical */}
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
@@ -122,7 +148,6 @@ const Navbar = ({ user, onLogout }) => {
             </div>
 
             {/* C. BOTÓN HAMBURGUESA (Mobile) */}
-            {/* AQUI ESTABA EL ERROR: Eliminé el LanguageSelector de aquí */}
             <div className="md:hidden flex items-center">
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -139,41 +164,59 @@ const Navbar = ({ user, onLogout }) => {
           <div className="md:hidden bg-white border-t border-gray-100 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto absolute w-full animate-in slide-in-from-top-5 duration-200">
             <div className="px-4 py-4 space-y-2 flex flex-col">
               
-              {/* NUEVO: Selector de Idioma DENTRO del menú móvil */}
-              <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-2">
+              {/* Selector de Idioma DENTRO del menú móvil */}
+              <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-4">
                  <div className="flex items-center gap-2 text-gray-600 font-medium">
                     <Globe size={18} />
-                    <span>Idioma / Language</span>
+                    <span>Idioma</span>
                  </div>
                  <LanguageSelector />
               </div>
               
               {/* Enlaces de Navegación - Móvil */}
-              {NAV_ITEMS.map((item) => (
-                <Link 
-                  key={item.path}
-                  to={item.path} 
-                  onClick={closeMobileMenu} 
-                  className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${
-                    isActiveLink(item.path)
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-gray-800 hover:text-indigo-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {t(item.key)}
-                </Link>
-              ))}
+              {NAV_ITEMS.map((item) => {
+                 // Estilo especial para VENTAS en móvil
+                 if (item.special) {
+                    return (
+                        <Link 
+                            key={item.path}
+                            to={item.path} 
+                            onClick={closeMobileMenu} 
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-2"
+                        >
+                            <Star size={20} className="fill-amber-700" />
+                            {t(item.key) || "Ventas de Inmuebles"}
+                        </Link>
+                    )
+                 }
+
+                 return (
+                    <Link 
+                        key={item.path}
+                        to={item.path} 
+                        onClick={closeMobileMenu} 
+                        className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${
+                        isActiveLink(item.path)
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-gray-800 hover:text-indigo-600 hover:bg-gray-50'
+                        }`}
+                    >
+                        {t(item.key)}
+                    </Link>
+                 )
+              })}
+
               <div className="border-t border-gray-100 my-4 pt-4">
                 {user ? (
                   <div className="space-y-4">
                       <div className="px-4 flex items-center gap-3 text-gray-800">
-                         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            <User size={20} />
-                         </div>
-                         <div>
+                          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                             <User size={20} />
+                          </div>
+                          <div>
                             <p className="text-xs text-gray-500 uppercase font-bold">Bienvenido</p>
                             <p className="font-bold">{user.name}</p>
-                         </div>
+                          </div>
                       </div>
                       <button 
                         onClick={() => { onLogout(); closeMobileMenu(); }} 
