@@ -1,7 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// Asegúrate de que la ruta a 'brand' sea la correcta según tu estructura de carpetas
+// Si 'Ventas.jsx' está en 'src/pages', entonces '../../config/brand' suele ser correcto.
+import { BRAND } from '../config/brand'; 
 
 const Ventas = () => {
+  // --- 1. LÓGICA DE SEGURIDAD Y TELÉFONO ---
+  // Recuperamos el número del .env, o usamos el de la marca como respaldo
+  const ENV_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER;
+  const PHONE = ENV_PHONE || BRAND.info.phone.replace(/[^0-9]/g, '');
+
+  // --- 2. MENSAJE PERSONALIZADO ---
+  const message = "Hola, me interesa comprar o invertir en propiedades, anótame en la lista de espera.";
+  
+  // Construimos el link final
+  const whatsappLink = `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
+
   return (
     <div style={styles.container}>
       {/* Capa oscura para que el texto se lea bien */}
@@ -22,9 +36,9 @@ const Ventas = () => {
           ¿Te imaginas ser dueño de esta vista? Sé el primero en enterarte cuando iniciemos la preventa.
         </p>
 
-        {/* Botón de WhatsApp para captar clientes YA */}
+        {/* Botón de WhatsApp conectado al ENV */}
         <a 
-          href="https://wa.me/573000000000?text=Hola,%20me%20interesa%20comprar%20o%20invertir%20en%20propiedades,%20anótame%20en%20la%20lista%20de%20espera." 
+          href={whatsappLink} 
           target="_blank" 
           rel="noopener noreferrer"
           style={styles.button}
@@ -40,13 +54,13 @@ const Ventas = () => {
   );
 };
 
-// ESTILOS (CSS en JS para que sea fácil de copiar)
+// ESTILOS (CSS en JS)
 const styles = {
   container: {
     position: 'relative',
     height: '100vh',
     width: '100%',
-    // Foto de fondo (cámbiala por una tuya si quieres)
+    // Foto de fondo
     backgroundImage: 'url("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop")', 
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -109,11 +123,13 @@ const styles = {
     fontSize: '1.1rem',
     transition: 'transform 0.2s',
     marginBottom: '20px',
+    cursor: 'pointer' // Agregué cursor pointer por si acaso
   },
   backLink: {
     color: 'rgba(255,255,255,0.7)',
     textDecoration: 'none',
     fontSize: '0.9rem',
+    cursor: 'pointer'
   }
 };
 

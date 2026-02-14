@@ -10,7 +10,13 @@ import { useLanguage } from '../../context/LanguageContext';
 /* ========================================================================
  * SECCIÓN 2: DATOS Y CONFIGURACIÓN
  * ======================================================================== */
-// Enlaces de Redes Sociales (Fácil de editar)
+
+// 1. Recuperamos el número del archivo .env (Igual que en PaymentCard)
+// Si no existe en el .env, intenta usar el de BRAND, y si no, uno por defecto.
+const ENV_PHONE = import.meta.env.VITE_WHATSAPP_NUMBER;
+const CLEAN_PHONE = ENV_PHONE || BRAND.info.phone.replace(/[^0-9]/g, '');
+
+// 2. Enlaces de Redes Sociales
 const SOCIAL_LINKS = [
     { id: 'fb', icon: <Facebook size={18}/>, link: "https://www.facebook.com/reservas2021" },
     { id: 'ig', icon: <Instagram size={18}/>, link: "https://www.instagram.com/ReservaBonanza" },
@@ -21,16 +27,11 @@ const SOCIAL_LINKS = [
  * SECCIÓN 3: COMPONENTE PRINCIPAL
  * ======================================================================== */
 export default function Footer() {
-  // 3.1 Hooks
   const { t } = useLanguage();
 
-  // 3.2 Lógica de WhatsApp
-  const whatsappNumber = BRAND.info.phone.replace(/[^0-9]/g, '');
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hola,%20me%20gustaría%20más%20información%20sobre%20sus%20servicios.`;
+  // Generamos el link con un mensaje personalizado
+  const whatsappLink = `https://wa.me/${CLEAN_PHONE}?text=Hola,%20me%20gustaría%20más%20información%20sobre%20sus%20servicios.`;
   
-/* ========================================================================
- * SECCIÓN 4: RENDERIZADO (JSX)
- * ======================================================================== */
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8 border-t border-gray-800 mt-auto">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -54,7 +55,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* COLUMNA 2: CONTACTO */}
+        {/* COLUMNA 2: CONTACTO (Aquí está el WhatsApp) */}
         <div>
           <h4 className="font-bold mb-6 text-gray-200">
             {t('footer.contact_title')}
@@ -65,7 +66,7 @@ export default function Footer() {
                <span className="max-w-[200px]">{BRAND.info.address}</span>
             </li>
             
-            {/* Link a WhatsApp */}
+            {/* --- LINK A WHATSAPP CON ÍCONO --- */}
             <li className="flex items-center">
                <a 
                  href={whatsappLink}
@@ -74,9 +75,9 @@ export default function Footer() {
                  className="flex items-center group transition-colors"
                  title="Ir al chat de soporte"
                >
-                 <WhatsAppIcon className="mr-3 w-[18px] h-[18px] text-green-500 group-hover:scale-110 transition-transform" />
-                 <span className="group-hover:text-green-400 transition-colors">
-                   {t('footer.chat_support')}
+                 <WhatsAppIcon className="mr-3 w-[18px] h-[18px] text-green-500 group-hover:scale-125 transition-transform duration-300" />
+                 <span className="group-hover:text-green-400 transition-colors font-medium">
+                   {t('footer.chat_support') || "Chat Soporte"}
                  </span>
                </a>
             </li>
@@ -92,20 +93,18 @@ export default function Footer() {
           </ul>
         </div>
 
-{/* COLUMNA 3: LEGAL */}
+        {/* COLUMNA 3: LEGAL */}
         <div>
            <h4 className="font-bold mb-6 text-gray-200">
              {t('footer.legal_title')}
            </h4>
            <ul className="space-y-3 text-gray-400 text-sm">
-              {/* Enlace a Sobre Nosotros */}
               <li>
                   <Link to="/sobre-nosotros" className="hover:text-white cursor-pointer transition-colors">
                       {t('footer.about_us')}
                   </Link>
               </li>
-
-              {/* Los demás enlaces (puedes dejarlos con '#' por ahora si no tienes esas páginas) */}
+              {/* Enlaces placeholder */}
               {['terms', 'privacy', 'rnt'].map((key) => (
                   <li key={key}>
                       <a href="#" className="hover:text-white cursor-pointer transition-colors">
@@ -117,7 +116,7 @@ export default function Footer() {
         </div>
       </div>
       
-      {/* BARRA INFERIOR (Copyright) */}
+      {/* BARRA INFERIOR */}
       <div className="max-w-7xl mx-auto px-4 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
          <p>© 2025 {BRAND.name} S.A.S. {t('footer.rights')}</p>
          <div className="flex gap-4 mt-4 md:mt-0">
@@ -129,7 +128,7 @@ export default function Footer() {
 }
 
 /* ========================================================================
- * SECCIÓN 5: COMPONENTES AUXILIARES
+ * SECCIÓN 4: COMPONENTES AUXILIARES
  * ======================================================================== */
 
 function SocialButton({ icon, link }) {
@@ -145,7 +144,7 @@ function SocialButton({ icon, link }) {
     );
 }
 
-// Icono SVG personalizado de WhatsApp
+// Icono SVG oficial de WhatsApp
 function WhatsAppIcon({ className }) {
     return (
         <svg 
