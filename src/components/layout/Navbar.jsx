@@ -3,7 +3,7 @@
  * ======================================================================== */
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, User, Globe, Star } from 'lucide-react'; // Agregué Star
+import { Menu, X, LogOut, User, Globe, Star } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSelector from '../LanguageSelector';
 
@@ -16,7 +16,6 @@ import logo from '../../assets/logo-bonanza.jpeg';
 const NAV_ITEMS = [
   { path: '/', key: 'navbar.home' },
   { path: '/propiedades', key: 'navbar.properties' },
-  // AQUÍ AGREGAMOS LA NUEVA SECCIÓN CON UNA BANDERA "ESPECIAL"
   { path: '/ventas', key: 'navbar.sales', special: true }, 
   { path: '/sobre-nosotros', key: 'navbar.about' }
 ];
@@ -27,16 +26,28 @@ const NAV_ITEMS = [
 const Navbar = ({ user, onLogout }) => {
   // 3.1 Hooks
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  // Extraemos 't' para traducciones y 'language' para saber el idioma actual
+  const { t, language } = useLanguage(); 
   const location = useLocation();
 
   // 3.2 Lógica Auxiliar
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  // Función para determinar si el link está activo
   const isActiveLink = (path) => {
     if (path === '/' && location.pathname !== '/') return false;
     return location.pathname.startsWith(path);
+  };
+
+  // Traducción manual para el label de idioma en móvil según el código actual
+  const getLanguageLabel = () => {
+    const labels = {
+      es: "Idioma",
+      en: "Language",
+      fr: "Langue",
+      de: "Sprache",
+      zh: "语言"
+    };
+    return labels[language] || labels.es;
   };
 
 /* ========================================================================
@@ -74,20 +85,18 @@ const Navbar = ({ user, onLogout }) => {
               </span>
             </Link>
 
-            {/* B. MENÚ DE ESCRITORIO (Hidden on Mobile) */}
+            {/* B. MENÚ DE ESCRITORIO */}
             <div className="hidden md:flex space-x-4 items-center">
               
-              {/* Selector de Idioma */}
+              {/* Selector de Idioma (Soporta automáticamente DE y ZH si están en el Context) */}
               <div className="mr-2">
                 <LanguageSelector />
               </div>
               
-              
-              {/* Enlaces de Navegación - Escritorio */}
+              {/* Enlaces de Navegación */}
               {NAV_ITEMS.map((item) => {
                 const active = isActiveLink(item.path);
                 
-                // Estilos especiales si es el botón de VENTAS
                 if (item.special) {
                     return (
                         <Link 
@@ -100,7 +109,7 @@ const Navbar = ({ user, onLogout }) => {
                           }`}
                         >
                           <Star size={16} className={active ? "fill-amber-700" : "fill-amber-600"} />
-                          {t(item.key) || "Ventas"} {/* Fallback por si no hay traducción */}
+                          {t(item.key)}
                         </Link>
                     );
                 }
@@ -120,7 +129,6 @@ const Navbar = ({ user, onLogout }) => {
                 );
               })}
               
-              {/* Separador Vertical */}
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
 
               {/* Área de Usuario */}
@@ -164,18 +172,17 @@ const Navbar = ({ user, onLogout }) => {
           <div className="md:hidden bg-white border-t border-gray-100 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto absolute w-full animate-in slide-in-from-top-5 duration-200">
             <div className="px-4 py-4 space-y-2 flex flex-col">
               
-              {/* Selector de Idioma DENTRO del menú móvil */}
+              {/* Selector de Idioma en móvil */}
               <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-4">
                  <div className="flex items-center gap-2 text-gray-600 font-medium">
                     <Globe size={18} />
-                    <span>Idioma</span>
+                    <span>{getLanguageLabel()}</span>
                  </div>
                  <LanguageSelector />
               </div>
               
               {/* Enlaces de Navegación - Móvil */}
               {NAV_ITEMS.map((item) => {
-                 // Estilo especial para VENTAS en móvil
                  if (item.special) {
                     return (
                         <Link 
@@ -185,7 +192,7 @@ const Navbar = ({ user, onLogout }) => {
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-2"
                         >
                             <Star size={20} className="fill-amber-700" />
-                            {t(item.key) || "Ventas de Inmuebles"}
+                            {t(item.key)}
                         </Link>
                     )
                  }
@@ -214,7 +221,9 @@ const Navbar = ({ user, onLogout }) => {
                              <User size={20} />
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500 uppercase font-bold">Bienvenido</p>
+                            <p className="text-xs text-gray-500 uppercase font-bold">
+                              {language === 'zh' ? '欢迎' : (language === 'de' ? 'Willkommen' : 'Bienvenido')}
+                            </p>
                             <p className="font-bold">{user.name}</p>
                           </div>
                       </div>
@@ -241,7 +250,6 @@ const Navbar = ({ user, onLogout }) => {
         )}
       </nav>
 
-      {/* --- 4.3 ESPACIADOR (Para compensar el navbar fixed) --- */}
       <div className="h-20 w-full bg-white"></div>
     </>
   );

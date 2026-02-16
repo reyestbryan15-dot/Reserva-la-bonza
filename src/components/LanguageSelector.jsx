@@ -11,7 +11,9 @@ import { Globe, ChevronDown, Check } from 'lucide-react';
 const LANGUAGES = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
   { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' }
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' }
 ];
 
 /* ========================================================================
@@ -30,6 +32,18 @@ const LanguageSelector = () => {
     setIsOpen(false);
   };
 
+  // Traducción rápida para el encabezado del selector
+  const getHeaderLabel = () => {
+    const labels = {
+      es: "Selecciona idioma",
+      en: "Select language",
+      fr: "Choisir la langue",
+      de: "Sprache wählen",
+      zh: "选择语言"
+    };
+    return labels[language] || labels.es;
+  };
+
 /* ========================================================================
  * SECCIÓN 4: RENDERIZADO (JSX)
  * ======================================================================== */
@@ -42,7 +56,7 @@ const LanguageSelector = () => {
         className={`
           flex items-center gap-2 px-3 py-2 rounded-full 
           transition-all duration-200 border
-          ${isOpen ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-transparent border-transparent hover:bg-gray-100 text-gray-700'}
+          ${isOpen ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-transparent border-transparent hover:bg-gray-100 text-gray-700'}
         `}
         title="Cambiar idioma / Change language"
       >
@@ -67,7 +81,9 @@ const LanguageSelector = () => {
           {/* Lista de Idiomas */}
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
             <div className="px-4 py-2 border-b border-gray-50 mb-1">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Selecciona idioma</span>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                {getHeaderLabel()}
+              </span>
             </div>
             
             {LANGUAGES.map((lang) => {
@@ -81,12 +97,12 @@ const LanguageSelector = () => {
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl shadow-sm rounded-sm overflow-hidden">{lang.flag}</span>
-                    <span className={`font-medium ${isActive ? 'text-blue-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                    <span className={`font-medium ${isActive ? 'text-indigo-600' : 'text-gray-700 group-hover:text-gray-900'}`}>
                       {lang.label}
                     </span>
                   </div>
                   
-                  {isActive && <Check size={16} className="text-blue-600" />}
+                  {isActive && <Check size={16} className="text-indigo-600" />}
                 </button>
               );
             })}
