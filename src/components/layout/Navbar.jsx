@@ -81,7 +81,7 @@ const Navbar = ({ user, onLogout }) => {
                 Reserva La Bonanza
               </span>
               <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md sm:hidden">
-                Bonanza
+                Reserva la Bonanza
               </span>
             </Link>
 
