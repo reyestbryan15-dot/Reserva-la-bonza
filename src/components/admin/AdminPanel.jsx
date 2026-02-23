@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../backend/supabaseClient';
-import { LogOut, Home, Bell, CheckCircle, Clock, Plus, Edit, MapPin, Trash2, Upload } from 'lucide-react';
+import { LogOut, Home, Bell, Plus, Edit, MapPin } from 'lucide-react';
 
 const AdminPanel = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('properties');
@@ -24,9 +24,15 @@ const AdminPanel = ({ onLogout }) => {
 
   const saveProperty = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase
+    // Convertir amenities a array si vienen como string separado por comas
+    const dataToSave = { 
+      ...formData, 
+      amenities: typeof formData.amenities === 'string' ? formData.amenities.split(',').map(a => a.trim()) : formData.amenities 
+    };
+
+    const { error } = await supabase
       .from('alojamientos')
-      .upsert([{ ...(editingId ? { id: editingId } : {}), ...formData }]);
+      .upsert([{ ...(editingId ? { id: editingId } : {}), ...dataToSave }]);
     
     if (!error) {
       setIsModalOpen(false);
@@ -37,12 +43,19 @@ const AdminPanel = ({ onLogout }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
       {/* SIDEBAR */}
-      <aside className="w-full md:w-72 bg-white border-b md:border-r border-slate-200 flex flex-row md:flex-col p-4 fixed bottom-0 md:relative z-50">
-        <div className="p-4 hidden md:block"><span className="font-black text-lg uppercase">La Bonanza</span></div>
-        <nav className="flex flex-row md:flex-col gap-2 w-full">
-          <button onClick={() => setActiveTab('properties')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'properties' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Inventario</button>
-          <button onClick={() => setActiveTab('reservations')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'reservations' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Reservas</button>
-        </nav>
+      <aside className="w-full md:w-72 bg-white border-b md:border-r border-slate-200 flex flex-row md:flex-col p-4 fixed bottom-0 md:relative z-50 justify-between">
+        <div className="flex flex-col w-full">
+          <div className="p-4 hidden md:block"><span className="font-black text-lg uppercase">La Bonanza</span></div>
+          <nav className="flex flex-row md:flex-col gap-2 w-full">
+            <button onClick={() => setActiveTab('properties')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'properties' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Inventario</button>
+            <button onClick={() => setActiveTab('reservations')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'reservations' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Reservas</button>
+          </nav>
+        </div>
+        
+        {/* BOTÓN CERRAR SESIÓN */}
+        <button onClick={onLogout} className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-xl transition">
+          <LogOut size={20} /> <span className="hidden md:inline">Salir</span>
+        </button>
       </aside>
 
       {/* MODAL */}
@@ -59,6 +72,8 @@ const AdminPanel = ({ onLogout }) => {
               <input className="p-3 border rounded-xl" type="number" placeholder="Max Niños" value={formData.max_ninos} onChange={e => setFormData({...formData, max_ninos: e.target.value})} />
             </div>
             <textarea className="w-full p-3 my-3 border rounded-xl" placeholder="Descripción" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} />
+            <input className="w-full p-3 mb-3 border rounded-xl" placeholder="Amenities (separados por coma: wifi, ac, tv)" value={formData.amenities} onChange={e => setFormData({...formData, amenities: e.target.value})} />
+            
             <label className="flex items-center gap-2 mb-4">
               <input type="checkbox" checked={formData.admite_mascotas} onChange={e => setFormData({...formData, admite_mascotas: e.target.checked})} /> Admite Mascotas
             </label>
@@ -70,12 +85,12 @@ const AdminPanel = ({ onLogout }) => {
         </div>
       )}
 
-      {/* MAIN */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 p-6 pb-24">
         <header className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-black uppercase tracking-tighter">{activeTab}</h2>
           {activeTab === 'properties' && (
-            <button onClick={() => { setFormData({}); setEditingId(null); setIsModalOpen(true); }} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+            <button onClick={() => { setFormData({titulo: '', descripcion: '', ubicacion: '', tipo: '', precio_noche: '', max_adultos: '', max_ninos: '', admite_mascotas: false, amenities: []}); setEditingId(null); setIsModalOpen(true); }} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
               <Plus size={16} /> NUEVO
             </button>
           )}
@@ -102,9 +117,7 @@ const AdminPanel = ({ onLogout }) => {
                   <h4 className="font-bold">{res.propiedad_titulo}</h4>
                   <p className="text-xs text-slate-400 uppercase">{res.nombre_cliente}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${res.estado === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-amber-100'}`}>{res.estado}</span>
-                </div>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${res.estado === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-amber-100'}`}>{res.estado}</span>
               </div>
             ))}
           </div>
