@@ -13,6 +13,7 @@ import ReservationPage from '../components/ReservationPage';
 import ConfirmationPage from '../components/ConfirmationPage';
 import AboutPage from '../components/AboutPage';
 import Ventas from "../components/Ventas";
+import CancelarReserva from "../components/CancelarReserva";
 
 // Auth
 import LoginPage from '../components/auth/LoginPage';
@@ -33,6 +34,7 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
             </>
           } />
           
+          <Route path="/cancelar" element={<div className="text-5xl font-black p-20">ENTRÓ A CANCELAR</div>} />
           <Route path="/propiedades" element={<GridAlojamientos />} />
           <Route path="/propiedad/:id" element={<PropertyDetail />} />
           <Route path="/reservar" element={<ReservationPage />} />
@@ -40,6 +42,7 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/sobre-nosotros" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
           <Route path="/ventas" element={<Ventas />} />
+
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
