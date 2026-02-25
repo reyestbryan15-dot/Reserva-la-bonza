@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../backend/supabaseClient'; // Asegúrate que la ruta sea correcta
 import { useLanguage } from '../context/LanguageContext';
 import { 
@@ -7,6 +7,7 @@ import {
   Tv, Utensils, Car, Trees, Lock, Coffee 
 } from 'lucide-react'; // Importamos más íconos
 import BookingCard from '../components/BookingCard';
+
 
 // 1. DICCIONARIO DE ÍCONOS (Frontend)
 // Conecta el ID de la base de datos con el Ícono visual y el texto
@@ -24,10 +25,16 @@ const AMENITY_MAP = {
 };
 
 const PropertyDetail = () => {
+
   const { id } = useParams();
+  const [searchParams] = useSearchParams(); // AGREGA ESTA LÍNEA
+  const checkIn = searchParams.get('checkin'); 
+  const checkOut = searchParams.get('checkout');
   const { t } = useLanguage();
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
+
+
 
   useEffect(() => {
     const fetchHotel = async () => {
@@ -74,7 +81,7 @@ const PropertyDetail = () => {
     displayImages.push(displayImages[0] || fallbackImage);
   }
   // --- FIN LÓGICA IMÁGENES ---
-
+console.log("Fechas desde URL:", { checkIn, checkOut });
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       
@@ -155,6 +162,8 @@ const PropertyDetail = () => {
                 propertyName={hotel.name || hotel.titulo}
                 propertyId={hotel.id}
                 rating={hotel.rating || 4.8}
+                checkIn={checkIn}   
+                checkOut={checkOut}
             />
         </div>
 

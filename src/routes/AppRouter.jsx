@@ -14,6 +14,7 @@ import ConfirmationPage from '../components/ConfirmationPage';
 import AboutPage from '../components/AboutPage';
 import Ventas from "../components/Ventas";
 import CancelarReserva from "../components/CancelarReserva";
+import Contacto from '../components/Contacto';
 
 // Auth
 import LoginPage from '../components/auth/LoginPage';
@@ -42,6 +43,7 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/sobre-nosotros" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
           <Route path="/ventas" element={<Ventas />} />
+          <Route path="/contacto" element={<Contacto />} />
 
           
           <Route path="*" element={<Navigate to="/" replace />} />

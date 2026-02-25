@@ -40,6 +40,19 @@ const AdminPanel = ({ onLogout }) => {
     } else alert(error.message);
   };
 
+  const updateReserva = async (id, nuevoEstado) => {
+  const { error } = await supabase
+    .from('reservas')
+    .update({ estado: nuevoEstado })
+    .eq('id', id);
+
+  if (!error) {
+    fetchData(); // Recarga la lista para mostrar el cambio
+  } else {
+    alert("Error al actualizar: " + error.message);
+  }
+};
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
       {/* SIDEBAR */}
@@ -113,12 +126,22 @@ const AdminPanel = ({ onLogout }) => {
           <div className="grid gap-4">
             {reservations.map(res => (
               <div key={res.id} className="bg-white p-5 rounded-2xl border flex justify-between items-center">
-                <div>
-                  <h4 className="font-bold">{res.propiedad_titulo}</h4>
-                  <p className="text-xs text-slate-400 uppercase">{res.nombre_cliente}</p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${res.estado === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-amber-100'}`}>{res.estado}</span>
-              </div>
+  <div>
+    <h4 className="font-bold">{res.propiedad_titulo}</h4>
+    <p className="text-xs text-slate-400 uppercase">{res.nombre_cliente}</p>
+  </div>
+  
+  <div className="flex flex-col gap-2 items-end">
+    <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${res.estado === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-amber-100'}`}>{res.estado}</span>
+    
+    {res.estado === 'pendiente' && (
+      <div className="flex gap-2">
+        <button onClick={() => updateReserva(res.id, 'confirmado')} className="text-xs bg-green-600 text-white px-2 py-1 rounded">Confirmar</button>
+        <button onClick={() => updateReserva(res.id, 'cancelado')} className="text-xs bg-red-600 text-white px-2 py-1 rounded">Cancelar</button>
+      </div>
+    )}
+  </div>
+</div>
             ))}
           </div>
         )}

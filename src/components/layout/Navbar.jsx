@@ -3,7 +3,7 @@
  * ======================================================================== */
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut, User, Globe, Star } from 'lucide-react';
+import { Menu, X, LogOut, User, Globe } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSelector from '../LanguageSelector';
 
@@ -17,7 +17,8 @@ const NAV_ITEMS = [
   { path: '/', key: 'navbar.home' },
   { path: '/propiedades', key: 'navbar.properties' },
   { path: '/ventas', key: 'navbar.sales', special: true }, 
-  { path: '/sobre-nosotros', key: 'navbar.about' }
+  { path: '/sobre-nosotros', key: 'navbar.about' },
+  { path: '/contacto', key: 'navbar.contact' }
 ];
 
 /* ========================================================================
@@ -35,7 +36,6 @@ const Navbar = ({ user, onLogout }) => {
 
   const isActiveLink = (path) => {
     if (path === '/' && location.pathname !== '/') return false;
-    return location.pathname.startsWith(path);
   };
 
   // Traducción manual para el label de idioma en móvil según el código actual
@@ -78,10 +78,10 @@ const Navbar = ({ user, onLogout }) => {
                   />
               </div>
               <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md hidden sm:block">
-                Reserva La Bonanza
+                Reservas La Bonanza
               </span>
               <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md sm:hidden">
-                Reserva la Bonanza
+                Reservas la Bonanza
               </span>
             </Link>
 
@@ -96,23 +96,21 @@ const Navbar = ({ user, onLogout }) => {
               {/* Enlaces de Navegación */}
               {NAV_ITEMS.map((item) => {
                 const active = isActiveLink(item.path);
-                
-                if (item.special) {
                     return (
                         <Link 
                           key={item.path}
                           to={item.path} 
                           className={`flex items-center gap-1 px-4 py-2 rounded-full font-bold transition-all duration-300 border ${
                             active 
-                              ? 'bg-amber-100 text-amber-700 border-amber-300 shadow-sm' 
-                              : 'bg-white text-amber-600 border-amber-200 hover:bg-amber-50 hover:shadow-md'
+                              ? 'bg-gray-100 text-black'
+                              : 'text-gray-600 hover:text-black hover:bg-gray-50'
                           }`}
                         >
-                          <Star size={16} className={active ? "fill-amber-700" : "fill-amber-600"} />
+                          
                           {t(item.key)}
                         </Link>
                     );
-                }
+                
 
                 return (
                     <Link 
@@ -181,37 +179,43 @@ const Navbar = ({ user, onLogout }) => {
                  <LanguageSelector />
               </div>
               
-              {/* Enlaces de Navegación - Móvil */}
-              {NAV_ITEMS.map((item) => {
-                 if (item.special) {
-                    return (
-                        <Link 
-                            key={item.path}
-                            to={item.path} 
-                            onClick={closeMobileMenu} 
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-lg font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-2"
-                        >
-                            <Star size={20} className="fill-amber-700" />
-                            {t(item.key)}
-                        </Link>
-                    )
-                 }
+              {/* 4.2 MENÚ DESPLEGABLE MÓVIL */}
+{isMobileMenuOpen && (
+  <div className="md:hidden bg-white border-t border-gray-100 shadow-xl absolute w-full z-40">
+    <div className="px-4 py-4 space-y-2">
+      
+      {/* Selector de Idioma */}
+      <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-4">
+        <div className="flex items-center gap-2 text-gray-600 font-medium">
+          <Globe size={18} />
+          <span>{getLanguageLabel()}</span>
+        </div>
+        <LanguageSelector />
+      </div>
 
-                 return (
-                    <Link 
-                        key={item.path}
-                        to={item.path} 
-                        onClick={closeMobileMenu} 
-                        className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${
-                        isActiveLink(item.path)
-                            ? 'bg-indigo-50 text-indigo-700'
-                            : 'text-gray-800 hover:text-indigo-600 hover:bg-gray-50'
-                        }`}
-                    >
-                        {t(item.key)}
-                    </Link>
-                 )
-              })}
+      {/* --- AQUÍ ESTÁ EL MAP ÚNICO --- */}
+      {NAV_ITEMS.map((item) => (
+        <Link 
+          key={item.path}
+          to={item.path} 
+          onClick={closeMobileMenu} 
+          className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${
+            isActiveLink(item.path)
+              ? 'bg-gray-100 text-black' // Color cuando está activo
+              : 'text-gray-800 hover:text-black hover:bg-gray-50' // Color normal y hover
+          }`}
+        >
+          {t(item.key)}
+        </Link>
+      ))}
+
+      {/* Área de Login Móvil */}
+      <div className="border-t border-gray-100 my-4 pt-4">
+        {/* ... (tu código actual de usuario/login aquí) */}
+      </div>
+    </div>
+  </div>
+)}
 
               <div className="border-t border-gray-100 my-4 pt-4">
                 {user ? (

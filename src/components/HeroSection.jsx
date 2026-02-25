@@ -79,6 +79,9 @@ export default function HeroSection() {
           <span className="opacity-90 text-xs md:text-sm font-light">
             Basado en <span className="font-bold underline cursor-pointer">7 opiniones verificadas</span> en Google Maps
           </span>
+          <span className="border-l border-blue-400 pl-6 text-sm font-semibold">
+            Avalado por World Trade Center
+            </span>
         </div>
       </div>
     </>

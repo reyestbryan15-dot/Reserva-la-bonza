@@ -3,13 +3,14 @@ import { supabase } from '../../backend/supabaseClient';
 import PropertyCard from './PropertyCard';
 import ElegantLoader from '../components/ui/ElegantLoader';
 // NUEVO: Agregamos useSearchParams aquí
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 const GridAlojamientos = ({ limit }) => {
   const [alojamientos, setAlojamientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
 
   // NUEVO: Leemos el parámetro de búsqueda de la URL
   const [searchParams] = useSearchParams();
@@ -102,6 +103,7 @@ const GridAlojamientos = ({ limit }) => {
             <PropertyCard 
               key={hotel.id} 
               data={hotel} 
+              searchQuery={location.search}
             />
           ))}
         </div>

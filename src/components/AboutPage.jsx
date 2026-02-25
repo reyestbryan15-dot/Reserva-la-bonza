@@ -1,5 +1,6 @@
 import React from 'react';
 import { Target, Eye, ShieldCheck, MapPin, CheckCircle, Briefcase, Users } from 'lucide-react';
+import logoWTC from '../assets/logo-wtc-barranquilla.jpeg'; 
 
 const AboutPage = () => {
   return (
@@ -112,7 +113,25 @@ const AboutPage = () => {
             </p>
           </div>
         </section>
-
+{/* 6. AVAL INTERNACIONAL (Nueva Sección) */}
+<section className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-inner">
+  <div className="shrink-0 bg-white p-4 rounded-full shadow-md">
+    {/* Aquí pones tu logo del WTC */}
+    <img 
+      src={logoWTC}
+      alt="World Trade Center" 
+      className="w-16 h-16 object-contain" 
+    />
+  </div>
+  <div>
+    <h3 className="text-xl font-bold text-blue-900 mb-2">Respaldo Internacional</h3>
+    <p className="text-gray-700 text-sm leading-relaxed">
+      Nos enorgullece contar con el aval y respaldo del <strong>World Trade Center</strong>, 
+      lo cual garantiza que nuestros estándares de servicio y calidad cumplen con las 
+      exigencias y protocolos de una de las organizaciones más prestigiosas a nivel global.
+    </p>
+  </div>
+</section>
       </div>
     </div>
   );

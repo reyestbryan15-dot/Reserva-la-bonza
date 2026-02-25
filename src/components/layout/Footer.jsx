@@ -20,7 +20,7 @@ const CLEAN_PHONE = ENV_PHONE || BRAND.info.phone.replace(/[^0-9]/g, '');
 const SOCIAL_LINKS = [
     { id: 'fb', icon: <Facebook size={18}/>, link: "https://www.facebook.com/reservas2021" },
     { id: 'ig', icon: <Instagram size={18}/>, link: "https://www.instagram.com/ReservaBonanza" },
-    { id: 'tw', icon: <Twitter size={18}/>, link: "https://twitter.com/ReservaBonanza" }
+    
 ];
 
 /* ========================================================================

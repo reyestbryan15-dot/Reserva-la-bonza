@@ -46,9 +46,9 @@ export default function PropertyCard({ img, title, type, location, price, rating
             <span className={`text-xl font-bold ${BRAND.colors.primary}`}>${price}</span>
             <span className="text-gray-400 text-xs"> / noche</span>
           </div>
-          <button className={`text-xs font-bold px-4 py-2 rounded-lg bg-gray-50 text-gray-600 group-hover:bg-[#0E7C7B] group-hover:text-white transition-colors`}>
-            Ver Detalles
-          </button>
+          <Link to={`/detalle/${data.id}${searchParams}`}>
+          Ver detalles
+          </Link>
         </div>
       </div>
     </div>
