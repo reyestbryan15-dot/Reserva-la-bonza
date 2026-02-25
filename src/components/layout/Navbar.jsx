@@ -51,210 +51,95 @@ const Navbar = ({ user, onLogout }) => {
   };
 
 /* ========================================================================
- * SECCIÓN 4: RENDERIZADO (JSX)
+ * SECCIÓN 4: RENDERIZADO (JSX) CORREGIDO
  * ======================================================================== */
   return (
     <>
-      {/* --- 4.1 NAVBAR FIJO --- */}
       <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-sm shadow-md transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             
-            {/* A. LOGO DE LA MARCA */}
-            <Link 
-              to="/" 
-              className="flex-shrink-0 flex items-center gap-2 cursor-pointer group overflow-hidden" 
-              onClick={() => { window.scrollTo(0,0); closeMobileMenu(); }}
-            >
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <img 
-                    src={logo} 
-                    alt="RB Logo" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display='none'; 
-                      e.target.parentElement.innerHTML='<span class="font-bold text-sm">RB</span>';
-                    }} 
-                  />
+            {/* A. LOGO */}
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 cursor-pointer group" onClick={() => window.scrollTo(0,0)}>
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg overflow-hidden">
+                  <img src={logo} alt="RB Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md hidden sm:block">
-                Reservas La Bonanza
-              </span>
-              <span className="text-xl font-bold text-gray-900 tracking-tight drop-shadow-md sm:hidden">
-                Reservas la Bonanza
-              </span>
+              <span className="text-xl font-bold text-gray-900 tracking-tight">Reservas La Bonanza</span>
             </Link>
 
-            {/* B. MENÚ DE ESCRITORIO */}
-            <div className="hidden md:flex space-x-4 items-center">
-              
-              {/* Selector de Idioma (Soporta automáticamente DE y ZH si están en el Context) */}
-              <div className="mr-2">
-                <LanguageSelector />
-              </div>
-              
-              {/* Enlaces de Navegación */}
-              {NAV_ITEMS.map((item) => {
-                const active = isActiveLink(item.path);
-                    return (
-                        <Link 
-                          key={item.path}
-                          to={item.path} 
-                          className={`flex items-center gap-1 px-4 py-2 rounded-full font-bold transition-all duration-300 border ${
-                            active 
-                              ? 'bg-gray-100 text-black'
-                              : 'text-gray-600 hover:text-black hover:bg-gray-50'
-                          }`}
-                        >
-                          
-                          {t(item.key)}
-                        </Link>
-                    );
-                
+{/* B. MENÚ DE ESCRITORIO */}
+<div className="hidden md:flex items-center space-x-6">
+  <LanguageSelector />
+  
+  {NAV_ITEMS.map((item) => (
+    <Link 
+      key={item.path}
+      to={item.path} 
+      className="text-sm font-bold text-gray-600 hover:text-black transition-colors"
+    >
+      {t(item.key)}
+    </Link>
+  ))}
 
-                return (
-                    <Link 
-                    key={item.path}
-                    to={item.path} 
-                    className={`text-base font-bold transition-colors duration-200 px-3 py-2 rounded-md ${
-                        active 
-                        ? 'text-indigo-600 bg-indigo-50' 
-                        : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-                    }`}
-                    >
-                    {t(item.key)}
-                    </Link>
-                );
-              })}
-              
-              <div className="h-6 w-px bg-gray-200 mx-2"></div>
+  {/* Botón Iniciar Sesión centrado/destacado */}
+  {user ? (
+    <button onClick={onLogout} className="text-sm font-bold text-gray-500 hover:text-red-600">
+      {t('navbar.logout')}
+    </button>
+  ) : (
+    <Link 
+      to="/login" 
+      className="bg-black text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-gray-800 transition-all"
+    >
+      {t('navbar.login')}
+    </Link>
+  )}
+</div>
 
-              {/* Área de Usuario */}
-              {user ? (
-                <div className="flex items-center gap-3 animate-in fade-in">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
-                    <User size={16} className="text-indigo-600" />
-                    <span className="max-w-[100px] truncate">{user.name}</span>
-                  </div>
-                  <button 
-                    onClick={onLogout} 
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all" 
-                    title={t('navbar.logout')}
-                  >
-                    <LogOut size={20} />
-                  </button>
-                </div>
-              ) : (
-                <Link to="/login">
-                  <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 hover:-translate-y-0.5 active:translate-y-0">
-                    {t('navbar.login')}
-                  </button>
-                </Link>
-              )}
-            </div>
-
-            {/* C. BOTÓN HAMBURGUESA (Mobile) */}
-            <div className="md:hidden flex items-center">
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-600 hover:text-indigo-600 focus:outline-none p-2 rounded-md hover:bg-gray-100 transition-colors"
-              >
+            {/* C. BOTÓN HAMBURGUESA */}
+            <div className="md:hidden">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600 p-2">
                 {isMobileMenuOpen ? <X className="h-8 w-8" /> : <Menu className="h-8 w-8" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* --- 4.2 MENÚ DESPLEGABLE MÓVIL --- */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 shadow-xl max-h-[calc(100vh-80px)] overflow-y-auto absolute w-full animate-in slide-in-from-top-5 duration-200">
-            <div className="px-4 py-4 space-y-2 flex flex-col">
-              
-              {/* Selector de Idioma en móvil */}
-              <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-4">
-                 <div className="flex items-center gap-2 text-gray-600 font-medium">
-                    <Globe size={18} />
-                    <span>{getLanguageLabel()}</span>
-                 </div>
-                 <LanguageSelector />
-              </div>
-              
-              {/* 4.2 MENÚ DESPLEGABLE MÓVIL */}
+{/* 4.2 MENÚ DESPLEGABLE MÓVIL */}
 {isMobileMenuOpen && (
-  <div className="md:hidden bg-white border-t border-gray-100 shadow-xl absolute w-full z-40">
-    <div className="px-4 py-4 space-y-2">
+  <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b shadow-lg z-50">
+    <div className="flex flex-col p-6 space-y-6">
       
-      {/* Selector de Idioma */}
-      <div className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl mb-4">
-        <div className="flex items-center gap-2 text-gray-600 font-medium">
-          <Globe size={18} />
-          <span>{getLanguageLabel()}</span>
-        </div>
+      {/* Selector de Idioma Móvil */}
+      <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
+        <span className="font-bold text-gray-700">Idioma / Language</span>
         <LanguageSelector />
       </div>
 
-      {/* --- AQUÍ ESTÁ EL MAP ÚNICO --- */}
       {NAV_ITEMS.map((item) => (
         <Link 
           key={item.path}
           to={item.path} 
-          onClick={closeMobileMenu} 
-          className={`block px-4 py-3 rounded-xl text-lg font-bold transition-colors ${
-            isActiveLink(item.path)
-              ? 'bg-gray-100 text-black' // Color cuando está activo
-              : 'text-gray-800 hover:text-black hover:bg-gray-50' // Color normal y hover
-          }`}
+          onClick={closeMobileMenu}
+          className="text-lg font-bold text-gray-800 text-center"
         >
           {t(item.key)}
         </Link>
       ))}
 
-      {/* Área de Login Móvil */}
-      <div className="border-t border-gray-100 my-4 pt-4">
-        {/* ... (tu código actual de usuario/login aquí) */}
+      {/* Botón Login */}
+      <div className="pt-6 border-t border-gray-100 flex justify-center">
+        {!user && (
+          <Link to="/login" onClick={closeMobileMenu} className="w-full max-w-[200px] bg-black text-white py-3 rounded-full font-bold text-center">
+            {t('navbar.login')}
+          </Link>
+        )}
       </div>
     </div>
   </div>
 )}
-
-              <div className="border-t border-gray-100 my-4 pt-4">
-                {user ? (
-                  <div className="space-y-4">
-                      <div className="px-4 flex items-center gap-3 text-gray-800">
-                          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                             <User size={20} />
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 uppercase font-bold">
-                              {language === 'zh' ? '欢迎' : (language === 'de' ? 'Willkommen' : 'Bienvenido')}
-                            </p>
-                            <p className="font-bold">{user.name}</p>
-                          </div>
-                      </div>
-                      <button 
-                        onClick={() => { onLogout(); closeMobileMenu(); }} 
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 text-red-600 font-bold bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
-                      >
-                        <LogOut size={18} />
-                        {t('navbar.logout')}
-                      </button>
-                  </div>
-                ) : (
-                  <Link 
-                    to="/login" 
-                    onClick={closeMobileMenu} 
-                    className="block px-4 py-3 bg-indigo-600 text-white text-center rounded-xl font-bold text-lg hover:bg-indigo-700 shadow-md"
-                  >
-                    {t('navbar.login')}
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </nav>
-
-      <div className="h-20 w-full bg-white"></div>
+      <div className="h-20 w-full"></div>
     </>
   );
 };
