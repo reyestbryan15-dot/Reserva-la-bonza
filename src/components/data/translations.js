@@ -36,11 +36,6 @@ export const translations = {
       cta: "Ver Cabañas",
       search_dest: "Destino",
       search_dest_ph: "¿A dónde vas?",
-      search_dates: "Entrada - Salida",
-      search_check_in: "Llegada",
-      search_check_out: "Salida",
-      search_guests: "Viajeros",
-      search_guests_ph: "¿Cuántos?",
       search_btn: "BUSCAR"
     },
     properties: {
@@ -176,11 +171,6 @@ export const translations = {
       cta: "View Cabins",
       search_dest: "Destination",
       search_dest_ph: "Where are you going?",
-      search_dates: "Check-in - Check-out",
-      search_check_in: "Check-in",
-      search_check_out: "Check-out",
-      search_guests: "Guests",
-      search_guests_ph: "Add guests",
       search_btn: "SEARCH"
     },
     properties: {

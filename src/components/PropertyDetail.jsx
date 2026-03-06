@@ -30,33 +30,68 @@ const PropertyDetail = () => {
   const [searchParams] = useSearchParams(); // AGREGA ESTA LÍNEA
   const checkIn = searchParams.get('checkin'); 
   const checkOut = searchParams.get('checkout');
+  const guests = searchParams.get('guests');
   const { t } = useLanguage();
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
 
 
 
-  useEffect(() => {
-    const fetchHotel = async () => {
-      try {
-        // Asegúrate que tu tabla se llame 'alojamientos' o 'rooms' (según la creaste en Supabase)
-        const { data, error } = await supabase
-          .from('alojamientos') // <--- OJO: Verifica si tu tabla se llama 'rooms' o 'alojamientos'
-          .select('*')
-          .eq('id', id)
-          .single();
+// 1. Agrega este nuevo estado arriba junto a los otros (hotel, loading...)
+const [fechasOcupadas, setFechasOcupadas] = useState([]);
 
-        if (error) throw error;
-        setHotel(data);
-      } catch (error) {
-        console.error("Error cargando propiedad:", error);
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const fetchHotelYReservas = async () => {
+    try {
+      setLoading(true);
+
+      // --- PARTE 1: TRAER DATOS DEL HOTEL (Lo que ya tenías) ---
+      const { data: hotelData, error: hotelError } = await supabase
+        .from('alojamientos')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (hotelError) throw hotelError;
+      setHotel(hotelData);
+
+      // --- PARTE 2: TRAER RESERVAS EXISTENTES (Nuevo: Paso 2A) ---
+      const { data: reservasData, error: reservasError } = await supabase
+        .from('reservas')
+        .select('fecha_llegada, fecha_salida')
+        .eq('propiedad_id', id)
+        .neq('estado', 'cancelada'); // No bloqueamos si la reserva fue cancelada
+
+      if (reservasError) throw reservasError;
+
+      // Convertimos los rangos (Inicio/Fin) en una lista de días individuales
+      if (reservasData) {
+        const diasParaBloquear = [];
+        
+        reservasData.forEach(reserva => {
+          // Convertimos strings a objetos Date de JS
+          let fechaActual = new Date(reserva.fecha_llegada);
+          const fechaFin = new Date(reserva.fecha_salida);
+
+          // Llenamos el array con cada día que esté en medio del rango
+          while (fechaActual <= fechaFin) {
+            diasParaBloquear.push(new Date(fechaActual));
+            fechaActual.setDate(fechaActual.getDate() + 1);
+          }
+        });
+        
+        setFechasOcupadas(diasParaBloquear);
       }
-    };
 
-    fetchHotel();
-  }, [id]);
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (id) fetchHotelYReservas();
+}, [id]);
 
   if (loading) return <div className="h-screen flex items-center justify-center text-gray-500 font-medium">{t('details.loading')}...</div>;
   if (!hotel) return <div className="text-center py-20 text-red-500">Propiedad no encontrada</div>;
@@ -155,17 +190,21 @@ console.log("Fechas desde URL:", { checkIn, checkOut });
 
         </div>
 
-        {/* TARJETA DERECHA (Booking) */}
-        <div className="w-full md:w-[350px] flex-shrink-0 sticky top-24 z-10">
-            <BookingCard 
-                pricePerNight={hotel.price || hotel.precio_noche} 
-                propertyName={hotel.name || hotel.titulo}
-                propertyId={hotel.id}
-                rating={hotel.rating || 4.8}
-                checkIn={checkIn}   
-                checkOut={checkOut}
-            />
-        </div>
+       
+ {/* TARJETA DERECHA (Booking) */}
+<div className="w-full md:w-[350px] flex-shrink-0 sticky top-24 z-10">
+    <BookingCard 
+        pricePerNight={hotel.price || hotel.precio_noche} 
+        propertyName={hotel.name || hotel.titulo}
+        propertyId={hotel.id}
+        rating={hotel.rating || 4.8}
+        checkIn={checkIn}   
+        checkOut={checkOut}
+        numGuests={guests}
+        // NUEVO: Pasamos las fechas ocupadas al componente de reserva
+        excludedDates={fechasOcupadas} 
+    />
+</div>
 
       </div>
     </div>
