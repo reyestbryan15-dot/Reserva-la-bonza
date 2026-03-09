@@ -1,151 +1,281 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../backend/supabaseClient';
-import { LogOut, Home, Bell, Plus, Edit, MapPin } from 'lucide-react';
+import { 
+  LogOut, Plus, Edit, MapPin, Trash2, LayoutGrid, Tag, Bell, 
+  X, Upload, Loader2, CheckCircle
+} from 'lucide-react';
 
 const AdminPanel = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('properties');
+  const [activeTab, setActiveTab] = useState('properties'); 
   const [properties, setProperties] = useState([]);
+  const [sales, setSales] = useState([]); 
   const [reservations, setReservations] = useState([]);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    titulo: '', descripcion: '', ubicacion: '', tipo: '', precio_noche: '',
-    max_adultos: '', max_ninos: '', admite_mascotas: false, calificacion: 5, amenities: []
-  });
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const initialForm = {
+    titulo: '', ubicacion: '', tipo: '', 
+    precio_noche: '', 
+    precio_cop: '', precio_usd: '', 
+    metros_cuadrados: '', habitaciones: '', banos: '',
+    imagenes: [],
+    descripcion: '', 
+    amenities: []
+  };
+
+  const [formData, setFormData] = useState(initialForm);
 
   const fetchData = async () => {
+    setLoading(true);
     const { data: props } = await supabase.from('alojamientos').select('*');
     setProperties(props || []);
-    const { data: reser } = await supabase.from('reservas').select('*');
+    const { data: vntas } = await supabase.from('ventas_propiedades').select('*').order('created_at', { ascending: false });
+    setSales(vntas || []);
+    const { data: reser } = await supabase.from('reservas').select('*').order('created_at', { ascending: false });
     setReservations(reser || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  const saveProperty = async (e) => {
+  const handleImageUpload = async (e) => {
+    try {
+      setUploading(true);
+      const files = Array.from(e.target.files);
+      const uploadPromises = files.map(async (file) => {
+        const fileName = `${Date.now()}-${file.name}`;
+        const folder = activeTab === 'sales' ? 'ventas' : 'alquiler';
+        const { error: uploadError } = await supabase.storage.from('hoteles').upload(`${folder}/${fileName}`, file);
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from('hoteles').getPublicUrl(`${folder}/${fileName}`);
+        return data.publicUrl;
+      });
+      const urls = await Promise.all(uploadPromises);
+      setFormData(prev => ({ ...prev, imagenes: [...(prev.imagenes || []), ...urls] }));
+    } catch (error) {
+      alert("Error subiendo: " + error.message);
+    } finally { setUploading(false); }
+  };
+
+  const removeImage = (index) => {
+    setFormData(prev => ({ ...prev, imagenes: prev.imagenes.filter((_, i) => i !== index) }));
+  };
+
+  const saveEntry = async (e) => {
     e.preventDefault();
-    // Convertir amenities a array si vienen como string separado por comas
-    const dataToSave = { 
-      ...formData, 
-      amenities: typeof formData.amenities === 'string' ? formData.amenities.split(',').map(a => a.trim()) : formData.amenities 
+    const isSales = activeTab === 'sales';
+    const table = isSales ? 'ventas_propiedades' : 'alojamientos';
+    
+    const payload = {
+      titulo: formData.titulo,
+      ubicacion: formData.ubicacion,
+      descripción: formData.descripción, 
+      tipo: formData.tipo || (isSales ? 'Venta' : 'Alquiler')
     };
 
-    const { error } = await supabase
-      .from('alojamientos')
-      .upsert([{ ...(editingId ? { id: editingId } : {}), ...dataToSave }]);
-    
+    if (isSales) {
+      payload.precio_cop = formData.precio_cop;
+      payload.precio_usd = formData.precio_usd;
+      payload.imagenes = formData.imagenes;
+      payload.metros_cuadrados = formData.metros_cuadrados;
+      payload.habitaciones = formData.habitaciones;
+      payload.banos = formData.banos;
+    } else {
+      payload.precio_noche = formData.precio_noche;
+      payload.galeria = formData.imagenes;
+      payload.amenities = formData.amenities;
+    }
+
+    const { error } = await supabase.from(table).upsert([{ 
+      ...(editingId ? { id: editingId } : {}), 
+      ...payload 
+    }]);
+
     if (!error) {
       setIsModalOpen(false);
       fetchData();
-    } else alert(error.message);
+      alert("¡Guardado con éxito!");
+    } else {
+      alert("Error: " + error.message);
+    }
   };
-
-  const updateReserva = async (id, nuevoEstado) => {
-  const { error } = await supabase
-    .from('reservas')
-    .update({ estado: nuevoEstado })
-    .eq('id', id);
-
-  if (!error) {
-    fetchData(); // Recarga la lista para mostrar el cambio
-  } else {
-    alert("Error al actualizar: " + error.message);
-  }
-};
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
       {/* SIDEBAR */}
-      <aside className="w-full md:w-72 bg-white border-b md:border-r border-slate-200 flex flex-row md:flex-col p-4 fixed bottom-0 md:relative z-50 justify-between">
-        <div className="flex flex-col w-full">
-          <div className="p-4 hidden md:block"><span className="font-black text-lg uppercase">La Bonanza</span></div>
-          <nav className="flex flex-row md:flex-col gap-2 w-full">
-            <button onClick={() => setActiveTab('properties')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'properties' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Inventario</button>
-            <button onClick={() => setActiveTab('reservations')} className={`flex-1 p-3 rounded-xl font-bold ${activeTab === 'reservations' ? 'bg-blue-50 text-blue-900' : 'text-slate-400'}`}>Reservas</button>
-          </nav>
-        </div>
-        
-        {/* BOTÓN CERRAR SESIÓN */}
-        <button onClick={onLogout} className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-xl transition">
-          <LogOut size={20} /> <span className="hidden md:inline">Salir</span>
+      <aside className="w-full md:w-72 bg-white border-r border-slate-200 flex flex-col p-6 h-screen sticky top-0 hidden md:flex">
+        <div className="mb-10"><span className="font-black text-2xl tracking-tighter text-blue-900 italic">ADMIN PANEL</span></div>
+        <nav className="flex flex-col gap-3 flex-1">
+          <button onClick={() => setActiveTab('properties')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'properties' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+            <LayoutGrid size={20}/> Alquileres
+          </button>
+          <button onClick={() => setActiveTab('sales')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'sales' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+            <Tag size={20}/> Ventas
+          </button>
+          <button onClick={() => setActiveTab('reservations')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'reservations' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+            <Bell size={20}/> Reservas
+          </button>
+        </nav>
+        <button onClick={onLogout} className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-2xl transition mt-auto">
+          <LogOut size={20} /> Salir
         </button>
       </aside>
 
-      {/* MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-          <form onSubmit={saveProperty} className="bg-white p-8 rounded-3xl w-full max-w-lg shadow-2xl">
-            <h3 className="font-black text-xl mb-4">{editingId ? 'EDITAR' : 'NUEVO'} ALOJAMIENTO</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <input className="p-3 border rounded-xl" placeholder="Título" required value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} />
-              <input className="p-3 border rounded-xl" placeholder="Ubicación" value={formData.ubicacion} onChange={e => setFormData({...formData, ubicacion: e.target.value})} />
-              <input className="p-3 border rounded-xl" type="number" placeholder="Precio" value={formData.precio_noche} onChange={e => setFormData({...formData, precio_noche: e.target.value})} />
-              <input className="p-3 border rounded-xl" placeholder="Tipo" value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value})} />
-              <input className="p-3 border rounded-xl" type="number" placeholder="Max Adultos" value={formData.max_adultos} onChange={e => setFormData({...formData, max_adultos: e.target.value})} />
-              <input className="p-3 border rounded-xl" type="number" placeholder="Max Niños" value={formData.max_ninos} onChange={e => setFormData({...formData, max_ninos: e.target.value})} />
-            </div>
-            <textarea className="w-full p-3 my-3 border rounded-xl" placeholder="Descripción" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} />
-            <input className="w-full p-3 mb-3 border rounded-xl" placeholder="Amenities (separados por coma: wifi, ac, tv)" value={formData.amenities} onChange={e => setFormData({...formData, amenities: e.target.value})} />
-            
-            <label className="flex items-center gap-2 mb-4">
-              <input type="checkbox" checked={formData.admite_mascotas} onChange={e => setFormData({...formData, admite_mascotas: e.target.checked})} /> Admite Mascotas
-            </label>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 font-bold text-slate-500">CANCELAR</button>
-              <button type="submit" className="flex-1 py-3 bg-blue-900 text-white rounded-xl font-bold">GUARDAR</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 p-6 pb-24">
-        <header className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-black uppercase tracking-tighter">{activeTab}</h2>
-          {activeTab === 'properties' && (
-            <button onClick={() => { setFormData({titulo: '', descripcion: '', ubicacion: '', tipo: '', precio_noche: '', max_adultos: '', max_ninos: '', admite_mascotas: false, amenities: []}); setEditingId(null); setIsModalOpen(true); }} className="bg-blue-900 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
-              <Plus size={16} /> NUEVO
+      {/* CONTENIDO PRINCIPAL */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <header className="flex justify-between items-center mb-10">
+          <h2 className="text-3xl font-black uppercase text-slate-800">
+            {activeTab === 'properties' ? 'Alquileres' : activeTab === 'sales' ? 'Ventas' : 'Reservas'}
+          </h2>
+          {activeTab !== 'reservations' && (
+            <button onClick={() => { setFormData(initialForm); setEditingId(null); setIsModalOpen(true); }} className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-900 transition shadow-xl">
+              <Plus size={20} /> AGREGAR NUEVO
             </button>
           )}
         </header>
 
-        {activeTab === 'properties' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {properties.map(p => (
-              <div key={p.id} className="bg-white p-6 rounded-2xl border shadow-sm">
-                <h4 className="font-black text-lg">{p.titulo}</h4>
-                <p className="text-xs text-slate-400 mb-2">{p.ubicacion}</p>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-blue-900">${p.precio_noche}</span>
-                  <button onClick={() => { setFormData(p); setEditingId(p.id); setIsModalOpen(true); }} className="text-blue-600"><Edit size={18} /></button>
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40}/></div>
+        ) : activeTab === 'reservations' ? (
+          /* TABLA DE RESERVAS MEJORADA */
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden text-center">
+            <table className="w-full border-collapse">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="p-5 text-xs font-black uppercase text-slate-400">Cliente / Contacto</th>
+                  <th className="p-5 text-xs font-black uppercase text-slate-400">Estado</th>
+                  <th className="p-5 text-xs font-black uppercase text-slate-400">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reservations.map(res => (
+                  <tr key={res.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                    <td className="p-5 font-bold text-slate-700">{res.nombre_cliente}</td>
+                    <td className="p-5">
+                      <span className={`px-4 py-1 rounded-full text-[10px] font-black ${res.estado === 'confirmada' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
+                        {(res.estado || 'pendiente').toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="p-5 flex justify-center gap-3">
+                      <button onClick={async () => { await supabase.from('reservas').update({ estado: 'confirmada' }).eq('id', res.id); fetchData(); }} className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"><CheckCircle size={18}/></button>
+                      <button onClick={async () => { if(window.confirm('¿Eliminar reserva?')) { await supabase.from('reservas').delete().eq('id', res.id); fetchData(); } }} className="p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"><Trash2 size={18}/></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* GRID DE PROPIEDADES */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {(activeTab === 'properties' ? properties : sales).map(item => (
+              <div key={item.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                <div className="h-52 bg-slate-100 relative">
+                  <img src={(item.imagenes?.[0] || item.galeria?.[0]) || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div className="p-6">
+                  <h4 className="font-black text-xl text-slate-800 truncate">{item.titulo}</h4>
+                  <p className="text-sm text-slate-400 flex items-center gap-1 mb-6"><MapPin size={14} /> {item.ubicacion}</p>
+                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
+                    <p className="font-black text-blue-900 text-lg">
+                      ${activeTab === 'properties' ? item.precio_noche?.toLocaleString() : item.precio_cop?.toLocaleString()}
+                    </p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => { 
+                          setFormData({ 
+                            ...item, 
+                            imagenes: item.imagenes || item.galeria || [],
+                            descripción: item.descripción || '' 
+                          }); 
+                          setEditingId(item.id); 
+                          setIsModalOpen(true); 
+                        }} 
+                        className="p-3 bg-white text-blue-600 rounded-xl shadow-sm hover:bg-blue-600 hover:text-white transition"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button onClick={async () => { if(window.confirm('¿Borrar definitivamente?')) { await supabase.from(activeTab === 'sales' ? 'ventas_propiedades' : 'alojamientos').delete().eq('id', item.id); fetchData(); } }} className="p-3 bg-white text-red-500 rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition"><Trash2 size={18} /></button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="grid gap-4">
-            {reservations.map(res => (
-              <div key={res.id} className="bg-white p-5 rounded-2xl border flex justify-between items-center">
-  <div>
-    <h4 className="font-bold">{res.propiedad_titulo}</h4>
-    <p className="text-xs text-slate-400 uppercase">{res.nombre_cliente}</p>
-  </div>
-  
-  <div className="flex flex-col gap-2 items-end">
-    <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${res.estado === 'confirmado' ? 'bg-green-100 text-green-700' : 'bg-amber-100'}`}>{res.estado}</span>
-    
-    {res.estado === 'pendiente' && (
-      <div className="flex gap-2">
-        <button onClick={() => updateReserva(res.id, 'confirmado')} className="text-xs bg-green-600 text-white px-2 py-1 rounded">Confirmar</button>
-        <button onClick={() => updateReserva(res.id, 'cancelado')} className="text-xs bg-red-600 text-white px-2 py-1 rounded">Cancelar</button>
-      </div>
-    )}
-  </div>
-</div>
-            ))}
-          </div>
         )}
       </main>
+
+      {/* MODAL CON ARREGLO DE ESTRUCTURA */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <form onSubmit={saveEntry} className="bg-white p-8 md:p-12 rounded-[3rem] w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 p-2 bg-slate-100 hover:bg-red-50 text-slate-500 rounded-full transition"><X size={24} /></button>
+            <h3 className="font-black text-2xl mb-8 uppercase tracking-tight">{editingId ? 'Actualizar' : 'Crear'} {activeTab === 'properties' ? 'Alquiler' : 'Venta'}</h3>
+            
+            <div className="space-y-6">
+              {/* GALERÍA */}
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-400 mb-3 ml-1">Galería de Fotos</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <label className="border-2 border-dashed border-slate-200 rounded-2xl h-24 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition">
+                    {uploading ? <Loader2 className="animate-spin text-blue-600" /> : <Upload size={20} className="text-slate-400"/>}
+                    <input type="file" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                  </label>
+                  {formData.imagenes?.map((img, i) => (
+                    <div key={i} className="relative h-24 rounded-2xl overflow-hidden group border border-slate-100">
+                      <img src={img} className="w-full h-full object-cover" alt="" />
+                      <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/80 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition"><Trash2 size={16}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* INPUTS DINÁMICOS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input required className="input-admin" placeholder="Título" value={formData.titulo || ''} onChange={e => setFormData({...formData, titulo: e.target.value})} />
+                <input required className="input-admin" placeholder="Ubicación" value={formData.ubicacion || ''} onChange={e => setFormData({...formData, ubicacion: e.target.value})} />
+                
+                {activeTab === 'sales' ? (
+                  <>
+                    <input type="number" className="input-admin" placeholder="Precio COP" value={formData.precio_cop || ''} onChange={e => setFormData({...formData, precio_cop: e.target.value})} />
+                    <input type="number" className="input-admin" placeholder="Precio USD (Opcional)" value={formData.precio_usd || ''} onChange={e => setFormData({...formData, precio_usd: e.target.value})} />
+                  </>
+                ) : (
+                  <input type="number" className="input-admin" placeholder="Precio por Noche / Mes" value={formData.precio_noche || ''} onChange={e => setFormData({...formData, precio_noche: e.target.value})} />
+                )}
+
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 ml-1">Descripción Detallada</label>
+                  <textarea 
+                    className="input-admin min-h-[150px] pt-4" 
+                    placeholder="Pega aquí todos los detalles (Servicios, condiciones, reglas, etc...)" 
+                    value={formData.descripción || ''} 
+                    onChange={e => setFormData({...formData, descripción: e.target.value})} 
+                  />
+                </div>
+
+                <div className="md:col-span-2 grid grid-cols-3 gap-4">
+                  <input type="number" className="input-admin" placeholder="m²" value={formData.metros_cuadrados || ''} onChange={e => setFormData({...formData, metros_cuadrados: e.target.value})} />
+                  <input type="number" className="input-admin" placeholder="Habs" value={formData.habitaciones || ''} onChange={e => setFormData({...formData, habitaciones: e.target.value})} />
+                  <input type="number" className="input-admin" placeholder="Baños" value={formData.banos || ''} onChange={e => setFormData({...formData, banos: e.target.value})} />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="w-full mt-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-lg hover:bg-blue-600 transition shadow-2xl">
+              {editingId ? 'GUARDAR CAMBIOS' : 'PUBLICAR PROPIEDAD'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      <style>{`
+        .input-admin { padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; font-weight: 500; outline: none; width: 100%; transition: all 0.2s; }
+        .input-admin:focus { border-color: #2563eb; background: white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+      `}</style>
     </div>
   );
 };
