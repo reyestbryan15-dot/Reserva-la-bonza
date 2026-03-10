@@ -72,7 +72,7 @@ const AdminPanel = ({ onLogout }) => {
     const payload = {
       titulo: formData.titulo,
       ubicacion: formData.ubicacion,
-      descripción: formData.descripción, 
+      descripcion: formData.descripcion, 
       tipo: formData.tipo || (isSales ? 'Venta' : 'Alquiler')
     };
 
@@ -119,9 +119,32 @@ const AdminPanel = ({ onLogout }) => {
             <Bell size={20}/> Reservas
           </button>
         </nav>
-        <button onClick={onLogout} className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-2xl transition mt-auto">
-          <LogOut size={20} /> Salir
-        </button>
+<button 
+  onClick={async () => {
+    try {
+      // 1. Intentamos cerrar sesión en Supabase
+      await supabase.auth.signOut();
+      
+      // 2. Limpiamos cualquier dato en el almacenamiento local
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // 3. Ejecutamos la función que viene por props (si existe)
+      if (onLogout) {
+        onLogout();
+      } else {
+        // 4. Si falla lo anterior, forzamos redirección al inicio
+        window.location.href = '/'; 
+      }
+    } catch (error) {
+      console.error("Error al salir:", error);
+      window.location.href = '/';
+    }
+  }} 
+  className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-2xl transition mt-auto w-full"
+>
+  <LogOut size={20} /> Salir
+</button>
       </aside>
 
       {/* CONTENIDO PRINCIPAL */}
@@ -189,7 +212,7 @@ const AdminPanel = ({ onLogout }) => {
                           setFormData({ 
                             ...item, 
                             imagenes: item.imagenes || item.galeria || [],
-                            descripción: item.descripción || '' 
+                            descripcion: item.descripcion || '' 
                           }); 
                           setEditingId(item.id); 
                           setIsModalOpen(true); 
@@ -248,12 +271,12 @@ const AdminPanel = ({ onLogout }) => {
                 )}
 
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 ml-1">Descripción Detallada</label>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-1 ml-1">Descripcion Detallada</label>
                   <textarea 
                     className="input-admin min-h-[150px] pt-4" 
                     placeholder="Pega aquí todos los detalles (Servicios, condiciones, reglas, etc...)" 
-                    value={formData.descripción || ''} 
-                    onChange={e => setFormData({...formData, descripción: e.target.value})} 
+                    value={formData.descripcion || ''} 
+                    onChange={e => setFormData({...formData, descripcion: e.target.value})} 
                   />
                 </div>
 
