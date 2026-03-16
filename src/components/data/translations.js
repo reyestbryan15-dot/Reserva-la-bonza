@@ -759,5 +759,18 @@ export const translations = {
       stats_clients: "快乐客户",
       stats_years: "行业经验"
     },
+    booking: {
+      alert_select_dates: "请选择您的入住日期",
+      check_in: "入住",
+      check_out: "退房",
+      add_date: "添加日期",
+      guests: "人数",
+      travelers_singular: "旅客",
+      travelers_plural: "旅客",
+      book_now: "立即预订",
+      cleaning_fee: "清洁费",
+      total: "总额",
+      select_dates_for_total: "请选择日期以计算总价"
+    },
   }
 };
