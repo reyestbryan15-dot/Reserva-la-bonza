@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const SearchEngine = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   
   // ESTADOS DE FILTRO
   const [location, setLocation] = useState(''); 
@@ -42,7 +42,7 @@ const SearchEngine = () => {
         
         {/* 1. FILTRO: UBICACIÓN */}
         <div className="relative w-full md:w-[33%] px-6 py-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 rounded-t-[2rem] md:rounded-l-full md:rounded-r-none group transition-colors">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">Sector / Zona</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">{t('search.area_label')}</label>
           <div className="flex items-center">
             <MapPin size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
             <select 
@@ -50,7 +50,7 @@ const SearchEngine = () => {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             >
-              <option value="">¿Dónde buscas?</option>
+              <option value="">{t('search.where_placeholder')}</option>
               <option value="Rodadero">El Rodadero</option>
               <option value="Gaira">Gaira</option>
               <option value="Bello Horizonte">Bello Horizonte</option>
@@ -63,7 +63,7 @@ const SearchEngine = () => {
 
         {/* 2. FILTRO: TIPO DE OPERACIÓN */}
         <div className="relative w-full md:w-[33%] px-6 py-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 group transition-colors">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">Categoría</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">{t('search.category')}</label>
           <div className="flex items-center">
             <Tag size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
             <select 
@@ -71,9 +71,9 @@ const SearchEngine = () => {
               value={operation}
               onChange={(e) => setOperation(e.target.value)}
             >
-              <option value="">Alquiler / Venta</option>
-              <option value="alquiler">Solo Alquiler</option>
-              <option value="venta">En Venta</option>
+              <option value="">{t('search.rent_or_sale')}</option>
+              <option value="alquiler">{t('search.rent_only')}</option>
+              <option value="venta">{t('search.for_sale')}</option>
             </select>
           </div>
         </div>
@@ -85,11 +85,11 @@ const SearchEngine = () => {
           onClick={() => setShowGuestMenu(!showGuestMenu)}
         >
           <div className="text-left">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Capacidad Mínima</label>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('search.min_capacity')}</label>
             <div className="flex items-center">
               <User size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
               <span className="text-sm md:text-base font-bold text-gray-700">
-                {guests} {guests === 1 ? 'Persona' : 'Personas'}
+                {guests} {guests === 1 ? t('search.person_singular') : t('search.person_plural')}
               </span>
             </div>
           </div>
@@ -105,7 +105,7 @@ const SearchEngine = () => {
           {showGuestMenu && (
             <div className="absolute top-[110%] right-0 w-full md:w-64 bg-white rounded-3xl shadow-2xl p-6 border border-gray-100 z-[60]">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-gray-800 text-sm">Huéspedes</span>
+                <span className="font-bold text-gray-800 text-sm">{t('booking.guests')}</span>
                 <div className="flex items-center gap-4">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setGuests(Math.max(1, guests - 1)); }}

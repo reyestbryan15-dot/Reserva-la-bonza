@@ -112,7 +112,7 @@ const Navbar = ({ user, onLogout }) => {
       
       {/* Selector de Idioma Móvil */}
       <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
-        <span className="font-bold text-gray-700">Idioma / Language</span>
+        <span className="font-bold text-gray-700">{t('common.language')}</span>
         <LanguageSelector />
       </div>
 

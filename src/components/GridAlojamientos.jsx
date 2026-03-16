@@ -4,8 +4,10 @@ import PropertyCard from './PropertyCard';
 import ElegantLoader from '../components/ui/ElegantLoader';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, SearchX } from 'lucide-react'; // Agregué SearchX para cuando no hay resultados
+import { useLanguage } from '../context/LanguageContext';
 
 const GridAlojamientos = ({ limit }) => {
+  const { t } = useLanguage();
   const [alojamientos, setAlojamientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -61,8 +63,8 @@ const GridAlojamientos = ({ limit }) => {
 
   // Título dinámico corregido
   const tituloPagina = filtroUrl && !limit 
-    ? `Resultados para "${filtroUrl}"` 
-    : (limit ? "Propiedades Destacadas" : "Todos nuestros Alojamientos");
+    ? `${t('lodging.results_for')} "${filtroUrl}"`
+    : (limit ? t('lodging.featured') : t('lodging.all'));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -75,7 +77,7 @@ const GridAlojamientos = ({ limit }) => {
           >
             <ArrowLeft size={20} className="text-gray-400 group-hover:text-indigo-600 transition-transform group-hover:-translate-x-1" />
             <span className="font-bold text-sm text-gray-600 group-hover:text-indigo-800 uppercase tracking-wider">
-              Volver al Inicio
+              {t('common.back_home')}
             </span>
           </Link>
         </div>
@@ -88,8 +90,8 @@ const GridAlojamientos = ({ limit }) => {
       {alojamientos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
             <SearchX size={48} className="mb-4 text-gray-300" />
-            <p className="text-xl font-medium">No encontramos nada en "{filtroUrl}"</p>
-            <p className="text-sm mt-2">Intenta con otra ubicación o destino.</p>
+            <p className="text-xl font-medium">{t('lodging.no_results_in')} "{filtroUrl}"</p>
+            <p className="text-sm mt-2">{t('lodging.try_another')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -110,7 +112,7 @@ const GridAlojamientos = ({ limit }) => {
             to="/propiedades" 
             className="inline-block bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-10 py-4 rounded-full font-bold hover:scale-105 transition shadow-xl"
           >
-            Ver todas las propiedades
+            {t('lodging.view_all')}
           </Link>
         </div>
       )}

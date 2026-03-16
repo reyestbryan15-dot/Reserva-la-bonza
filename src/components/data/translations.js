@@ -3,78 +3,31 @@ export const translations = {
    * 1. ESPAÑOL (ES)
    * ======================================================================== */
   es: {
-    navbar: {
-      home: "Inicio",
-      properties: "Propiedades",
-      about: "Nosotros",
-      contact: "Contacto",
-      login: "Iniciar Sesión",
-      logout: "Cerrar Sesión",
-      sales: "Ventas", // CORREGIDO (Antes decía navbar.sales)
-      profile: "Mi Perfil"
-    },
-    loginPage: {
-      welcome: "Bienvenido",
-      subtitle: "Accede a tu cuenta de viajero o gestiona tu hotel.",
-      travelers: "Viajeros frecuentes",
-      hotel_mgmt: "Gestión Hotelera",
-      tab_login: "Iniciar Sesión",
-      tab_register: "Registrarse",
-      copyright: "© 2026 ReservaLaBonanza",
-      toast_welcome: "Bienvenido",
-      toast_searching: "Buscando propiedades...",
-      email: "Correo Electrónico",
-      password: "Contraseña",
-      forgot: "¿Olvidaste tu contraseña?",
-      enter: "Ingresar",
-      register_demo: "Registrar Demo"
-    },
-    hero: {
-      title1: "Encuentra la estancia perfecta",
-      title2: "para tus vacaciones soñadas",
-      subtitle: "Descubre propiedades exclusivas a nivel nacional e internacional. El lugar perfecto para vivir o invertir te está esperando.",
-      cta: "Ver Cabañas",
-      search_dest: "Destino",
-      search_dest_ph: "¿A dónde vas?",
-      search_btn: "BUSCAR"
-    },
-    properties: {
-      featured: "Propiedades Destacadas",
-      all: "Todas las Propiedades",
-      section_title: "Alojamientos Destacados",
-      section_subtitle: "Selección exclusiva, administrados directamente para garantizar tu tranquilidad.",
-      btn_view_all: "Ver todas las propiedades",
-      price_night: "Precio por noche"
-    },
     common: {
       loading: "Cargando...",
       error: "Ocurrió un error",
       details: "Ver Detalles",
-      price_night: "/ noche"
+      price_night: "/ noche",
+      night: "noche",
+      language: "Idioma",
+      back_home: "Volver al Inicio"
     },
-    details: {
-      back: "Volver a la lista",
-      price_night: "Precio por noche",
-      book_now: "Reservar Ahora",
-      no_charge: "No se hará ningún cargo todavía",
-      services: "Servicios",
-      description: "Descripción",
-      loading: "Cargando...",
-      wifi: "Wifi Gratis",
-      ac: "Aire Acondicionado",
-      pool: "Piscina",
-      default_desc: "Disfruta de una estancia inolvidable en {hotelName}. Este alojamiento cuenta con todas las comodidades para que tus vacaciones sean perfectas."
-    },
-    catalog: {
-      title: "Catálogo Completo",
-      subtitle: "Explora nuestras 5 opciones exclusivas en Santa Marta",
-      back_button: "Volver al Inicio"
+    navbar: {
+      logout: "Cerrar Sesión",
+      profile: "Mi Perfil",
+      login: "Ingresar",
+      register: "Registrarse",
+      home: "Inicio",
+      properties: "Propiedades",
+      sales: "Ventas",
+      about: "Sobre Nosotros",
+      contact: "Contacto"
     },
     footer: {
-      brand_desc: "Agencia de turismo especializada en cabañas y apartaestudios en Santa Marta. Experiencias únicas frente al mar.",
+      brand_desc: "Tu aliado confiable para encontrar los mejores hospedajes y experiencias en el Caribe Colombiano. Calidad y seguridad garantizada.",
       contact_title: "Contacto",
-      chat_support: "Chat Soporte y Reservas",
-      always_open: "Siempre abierto",
+      chat_support: "Chat de Soporte",
+      always_open: "Atención 24/7",
       legal_title: "Legal",
       about_us: "Sobre Nosotros",
       terms: "Términos y Condiciones",
@@ -82,610 +35,729 @@ export const translations = {
       rnt: "RNT (Registro Nacional)",
       rights: "Todos los derechos reservados."
     },
+    sales: {
+      title: "Portafolio de Ventas",
+      consult_price: "Consultar Precio",
+      view_details_gallery: "Ver Detalles y Galería",
+      catalog_title: "Catálogo de Ventas",
+      investment_opportunities: "Oportunidades de Inversión",
+      properties_for_sale_in: "Propiedades en venta en",
+      no_properties_available_in: "No hay propiedades de venta disponibles en",
+      try_searching: "Prueba buscando en Cartagena o Santa Marta.",
+      explore_all: "Explorar todas las ventas",
+      sale_price: "Precio de Venta",
+      consult: "Consultar",
+      talk_to_advisor: "HABLAR CON ASESOR",
+      image_alt: "Vista"
+    },
+    booking: {
+      alert_select_dates: "Por favor selecciona las fechas de tu estadía",
+      check_in: "Llegada",
+      check_out: "Salida",
+      add_date: "Agregue fecha",
+      guests: "Huéspedes",
+      travelers_singular: "Viajero",
+      travelers_plural: "Viajeros",
+      book_now: "Reservar ahora",
+      cleaning_fee: "Gastos de limpieza",
+      total: "Total",
+      select_dates_for_total: "Selecciona fechas para calcular el precio total"
+    },
+    reservation: {
+      alert_valid_dates: "Por favor selecciona fechas válidas.",
+      alert_save_error: "Error al guardar:",
+      created_title: "¡Reserva Creada!",
+      created_subtitle: "Paga ahora para confirmar tu estancia.",
+      back: "Volver atrás",
+      finish_title: "Finalizar tu Reserva 🔒",
+      dates: "Fechas",
+      addons: "Adicionales",
+      cleaning: "Limpieza",
+      airport_taxi: "Taxi Aeropuerto",
+      your_data: "Tus Datos",
+      first_name: "Nombre",
+      last_name: "Apellido",
+      document: "Cédula",
+      whatsapp: "WhatsApp",
+      email: "Email",
+      people: "personas",
+      included: "Incluido",
+      taxi: "Taxi",
+      processing: "Procesando...",
+      confirm: "Confirmar Reserva"
+    },
+    search: {
+      area_label: "Sector / Zona",
+      where_placeholder: "¿Dónde buscas?",
+      category: "Categoría",
+      rent_or_sale: "Alquiler / Venta",
+      rent_only: "Solo Alquiler",
+      for_sale: "En Venta",
+      min_capacity: "Capacidad Mínima",
+      person_singular: "Persona",
+      person_plural: "Personas"
+    },
+    lodging: {
+      results_for: "Resultados para",
+      featured: "Propiedades Destacadas",
+      all: "Todos nuestros Alojamientos",
+      no_results_in: "No encontramos nada en",
+      try_another: "Intenta con otra ubicación o destino.",
+      view_all: "Ver todas las propiedades"
+    },
+    contact: {
+      title: "CONTACTO",
+      subtitle: "Estamos para ayudarte",
+      send_email: "Enviar Email",
+      footer: "Reservas Turismo © 2026"
+    },
+    properties: {
+      section_title: "Propiedades Destacadas",
+      section_subtitle: "Descubre opciones seleccionadas para tu próxima estadía.",
+      btn_view_all: "Ver todas las propiedades",
+      coming_soon: "Próximamente"
+    },
+    loginPage: {
+      welcome_back: "Bienvenido",
+      subtitle: "Inicia sesión para continuar",
+      tab_login: "Iniciar Sesión",
+      tab_register: "Registrarse",
+      label_travelers: "Viajeros",
+      label_hotels: "Hoteles",
+      toast_welcome: "¡Bienvenido de nuevo!",
+      toast_reg_success: "Registro exitoso. ¡Ya puedes entrar!"
+    },
     auth: {
-      login_title: "Accede a tu cuenta",
-      email_label: "Email",
+      login_title: "Iniciar Sesión",
+      email_label: "Correo Electrónico",
       email_ph: "ejemplo@correo.com",
       password_label: "Contraseña",
-      password_ph: "••••••••",
+      password_ph: "******",
       forgot_pass: "¿Olvidaste tu contraseña?",
       btn_enter: "Entrar",
-      btn_validating: "Validando reserva...",
-      or_continue: "O continúa con",
-      secure_text: "Acceso seguro para Administración, Hoteles y Clientes",
-      tooltip_show: "Abrir persiana (Ver)",
-      tooltip_hide: "Cerrar persiana (Ocultar)",
-      error_key: "¡Ups! Esa llave no abre esta habitación. Credenciales no válidas. Si olvidaste tu llave, usa el botón de recuperar."
+      btn_validating: "Validando...",
+      secure_text: "Acceso seguro SSL mediante Supabase",
+      error_key: "Correo o contraseña incorrectos"
     },
     register: {
       title: "Crear Cuenta",
-      subtitle: "Selecciona cómo quieres usar la plataforma",
-      role_traveler: "Soy Viajero",
-      role_hotel: "Soy Hotel",
+      subtitle: "Únete a nuestra comunidad hoy mismo",
+      role_traveler: "Viajero",
+      role_hotel: "Hotel / Socio",
       name: "Nombre",
-      lastname: "Apellido",
       name_ph: "Tu nombre",
-      lastname_ph: "Tus apellidos",
-      company_name: "Nombre del Establecimiento",
-      company_ph: "Ej: Hotel Gran Paraíso",
-      nit: "NIT / RUT (Identificación Tributaria)",
-      nit_ph: "Ej: 900.123.456-7",
-      email: "Email",
-      email_corp: "Email Corporativo",
-      email_ph: "correo@ejemplo.com",
-      email_corp_ph: "reservas@tuhotel.com",
+      lastname: "Apellido",
+      lastname_ph: "Tu apellido",
+      company_name: "Nombre de la Empresa / Hotel",
+      company_ph: "Ej: Hotel Paraíso",
+      nit: "NIT / Identificación Fiscal",
+      nit_ph: "Número de identificación",
+      email: "Correo Personal",
+      email_ph: "tu@correo.com",
+      email_corp: "Correo Corporativo",
+      email_corp_ph: "contacto@empresa.com",
       password: "Contraseña",
-      password_ph: "Crear contraseña",
+      password_ph: "Mínimo 6 caracteres",
       accept_terms: "Acepto los",
-      terms_link: "Términos y Condiciones",
-      and: "y la",
+      terms_link: "Términos de Servicio",
       privacy_link: "Política de Privacidad",
-      of_brand: "de ReservaLaBonanza.",
-      btn_register: "Registrarse"
+      and: "y la",
+      of_brand: "de La Bonanza.",
+      btn_register: "Crear mi cuenta"
     },
-    recover: {
-      title: "Recuperar Contraseña",
-      desc: "Ingresa tu correo y te enviaremos las instrucciones.",
-      label_email: "Email Registrado",
-      placeholder: "ejemplo@correo.com",
-      btn_cancel: "Cancelar",
-      btn_send: "Enviar",
-      toast_success: "Hemos enviado un enlace de recuperación a"
-    }
+    dashboard: {
+      welcome_user: "¡Hola, {name}!",
+      summary_today: "Este es el resumen de hoy",
+      traveler_subtitle: "Encuentra tu próximo destino",
+      role_hotel: "Anfitrión",
+      role_traveler: "Viajero",
+      monthly_earnings: "Ganancias del Mes",
+      vs_last_month: "vs. mes anterior",
+      active_bookings: "Reservas Activas",
+      no_pending: "Sin pendientes",
+      my_hotels: "Mis Hoteles",
+      register_property: "Registrar propiedad",
+      empty_title: "Sin propiedades aún",
+      empty_desc: "Comienza a publicar para ver tus estadísticas aquí.",
+      btn_new_property: "Publicar ahora",
+      search_place: "¿A dónde vas?",
+      btn_search: "Buscar",
+      recommended_destinations: "Destinos recomendados"
+    },
+    myRooms: {
+      title: "Mis Habitaciones",
+      subtitle: "Gestiona y organiza las unidades de tu propiedad",
+      btn_new: "Nueva Habitación",
+      search_placeholder: "Buscar por nombre o tipo...",
+      filter_all: "Todos los estados",
+      status_disponible: "Disponible",
+      status_ocupado: "Ocupado",
+      status_mantenimiento: "En Mantenimiento",
+      max_cap: "{num} personas máx.",
+      btn_edit: "Editar unidad",
+      add_another: "Agregar otra unidad"
+    },
+    hostLayout: {
+      host_panel: "Panel de Anfitrión",
+      logout_btn: "Cerrar Sesión",
+      logout_tooltip: "Salir del panel",
+      menu_summary: "Resumen",
+      menu_rooms: "Habitaciones",
+      menu_reservations: "Reservas",
+      alert_save: "¡Habitación guardada con éxito!",
+      res_panel_title: "Panel de Reservas",
+      res_panel_soon: "Próximamente: Gestiona tus reservas desde aquí."
+    },
+    hero: {
+      title1: "Encuentra la estancia perfecta",
+      title2: "para tus vacaciones soñadas",
+      subtitle: "Descubre propiedades exclusivas a nivel nacional e internacional. El lugar perfecto para vivir o invertir te está esperando."
+    },
+    adminPanel: {
+      menu_rentals: "Alquileres",
+      menu_sales: "Ventas",
+      menu_reservations: "Reservas",
+      logout: "Cerrar Sesión",
+      btn_add_new: "Agregar Nuevo",
+      table_client: "Cliente",
+      table_status: "Estado",
+      table_actions: "Acciones",
+      confirm_delete_res: "¿Eliminar esta reserva?",
+      confirm_delete_prop: "¿Eliminar esta propiedad?",
+      modal_create: "Crear",
+      modal_update: "Actualizar",
+      type_rental: "Alojamiento",
+      type_sale: "Propiedad de Venta",
+      label_gallery: "Galería de Imágenes",
+      label_desc: "Descripción",
+      ph_title: "Título de la propiedad",
+      ph_location: "Ubicación (Ciudad, Sector)",
+      ph_price_cop: "Precio en COP",
+      ph_price_usd: "Precio en USD",
+      ph_price_night: "Precio por noche",
+      ph_desc: "Describe los detalles de la propiedad...",
+      ph_rooms: "Habitaciones",
+      ph_bathrooms: "Baños",
+      btn_save_changes: "Guardar Cambios",
+      btn_publish: "Publicar Ahora",
+      alert_success: "¡Guardado correctamente!",
+      error_upload: "Error al subir imagen: "
+    },
+    details: {
+      back: "Volver a propiedades",
+      loading: "Cargando detalles",
+      not_found: "Propiedad no encontrada",
+      description: "Acerca de este lugar",
+      services: "Lo que este lugar ofrece",
+      no_services: "No hay servicios especificados."
+    },
+    amenities: {
+      wifi: "Wifi Gratis",
+      ac: "Aire Acondicionado",
+      pool: "Piscina",
+      tv: "Smart TV",
+      kitchen: "Cocina Equipada",
+      parking: "Parqueadero",
+      balcony: "Balcón",
+      security: "Seguridad",
+      coffee: "Cafetera",
+      view: "Vista al Mar"
+    },
+    about: {
+      title: "SOBRE NOSOTROS",
+      subtitle: "Tu puerta de entrada a experiencias inolvidables",
+      description: "En Reservas Turismo, nos dedicamos a conectar viajeros con los mejores alojamientos y oportunidades inmobiliarias. Con años de experiencia en el mercado, garantizamos seguridad, confort y un servicio personalizado.",
+      mission: "Nuestra Misión",
+      mission_text: "Transformar la forma en que las personas viajan y encuentran su hogar ideal, ofreciendo transparencia y calidad en cada reserva.",
+      stats_hotels: "Alojamientos",
+      stats_clients: "Clientes Felices",
+      stats_years: "Años de Experiencia"
+    },
   },
 
   /* ========================================================================
    * 2. ENGLISH (EN)
    * ======================================================================== */
   en: {
-    navbar: {
-      home: "Home",
-      properties: "Properties",
-      about: "About Us",
-      contact: "Contact",
-      login: "Login",
-      logout: "Logout",
-      sales: "sales", 
-      profile: "My Profile"
+    common: { loading: "Loading...", error: "An error occurred", details: "View Details", price_night: "/ night", night: "night", language: "Language", back_home: "Back to Home" },
+    navbar: { logout: "Logout", profile: "My Profile", login: "Login", register: "Sign Up", home: "Home", properties: "Properties", sales: "Sales", about: "About Us", contact: "Contact" },
+    footer: {
+      brand_desc: "Your reliable ally for finding the best accommodations and experiences in the Colombian Caribbean. Guaranteed quality and safety.",
+      contact_title: "Contact", chat_support: "Support Chat", always_open: "24/7 Support",
+      legal_title: "Legal", about_us: "About Us", terms: "Terms & Conditions", privacy: "Privacy Policy",
+      rnt: "National Tourism Registry", rights: "All rights reserved."
     },
-    loginPage: {
-      welcome: "Welcome",
-      subtitle: "Access your traveler account or manage your hotel.",
-      travelers: "Frequent Travelers",
-      hotel_mgmt: "Hotel Management",
-      tab_login: "Login",
-      tab_register: "Register",
-      copyright: "© 2026 ReservaLaBonanza",
-      toast_welcome: "Welcome",
-      toast_searching: "Searching properties...",
-      email: "Email Address",
-      password: "Password",
-      forgot: "Forgot Password?",
-      enter: "Sign In",
-      register_demo: "Register Demo"
+    sales: {
+      title: "Sales Portfolio", consult_price: "Check Price", view_details_gallery: "View Details & Gallery",
+      catalog_title: "Sales Catalog", investment_opportunities: "Investment Opportunities",
+      properties_for_sale_in: "Properties for sale in", no_properties_available_in: "No properties for sale available in",
+      try_searching: "Try searching in Cartagena or Santa Marta.", explore_all: "Explore all sales",
+      sale_price: "Sale price", consult: "Consult", talk_to_advisor: "TALK TO AN ADVISOR", image_alt: "View"
+    },
+    booking: {
+      alert_select_dates: "Please select your stay dates", check_in: "Check-in", check_out: "Check-out",
+      add_date: "Add date", guests: "Guests", travelers_singular: "Traveler", travelers_plural: "Travelers",
+      book_now: "Book now", cleaning_fee: "Cleaning fee", total: "Total", select_dates_for_total: "Select dates to calculate the total price"
+    },
+    reservation: {
+      alert_valid_dates: "Please select valid dates.", alert_save_error: "Save error:",
+      created_title: "Booking created!", created_subtitle: "Pay now to confirm your stay.", back: "Go back",
+      finish_title: "Complete your booking 🔒", dates: "Dates", addons: "Add-ons", cleaning: "Cleaning",
+      airport_taxi: "Airport taxi", your_data: "Your details", first_name: "First name", last_name: "Last name",
+      document: "ID", whatsapp: "WhatsApp", email: "Email", people: "people", included: "Included",
+      taxi: "Taxi", processing: "Processing...", confirm: "Confirm booking"
+    },
+    search: {
+      area_label: "Area / Zone", where_placeholder: "Where are you searching?", category: "Category",
+      rent_or_sale: "Rent / Sale", rent_only: "Rent only", for_sale: "For sale",
+      min_capacity: "Minimum capacity", person_singular: "Person", person_plural: "People"
+    },
+    lodging: {
+      results_for: "Results for", featured: "Featured properties", all: "All our stays",
+      no_results_in: "We found nothing in", try_another: "Try another location or destination.", view_all: "View all properties"
+    },
+    contact: { title: "CONTACT", subtitle: "We’re here to help", send_email: "Send Email", footer: "Tourism Bookings © 2026" },
+    properties: { section_title: "Featured Properties", section_subtitle: "Discover selected options for your next stay.", btn_view_all: "View all properties", coming_soon: "Coming soon" },
+    loginPage: { welcome_back: "Welcome", subtitle: "Login to continue", tab_login: "Sign In", tab_register: "Register", label_travelers: "Travelers", label_hotels: "Hotels", toast_welcome: "Welcome back!", toast_reg_success: "Success! You can now login." },
+    auth: { login_title: "Login", email_label: "Email", email_ph: "example@mail.com", password_label: "Password", password_ph: "******", forgot_pass: "Forgot password?", btn_enter: "Sign In", btn_validating: "Validating...", secure_text: "SSL Secure access" },
+    register: {
+      title: "Create Account", subtitle: "Join our community today", role_traveler: "Traveler", role_hotel: "Hotel / Partner",
+      name: "First Name", name_ph: "Your name", lastname: "Last Name", lastname_ph: "Your last name",
+      company_name: "Company / Hotel Name", company_ph: "e.g. Paradise Hotel", nit: "Tax ID / NIT", nit_ph: "Identification number",
+      email: "Personal Email", email_ph: "you@mail.com", email_corp: "Corporate Email", email_corp_ph: "contact@company.com",
+      password: "Password", password_ph: "Min. 6 characters", accept_terms: "I accept the", terms_link: "Terms of Service",
+      privacy_link: "Privacy Policy", and: "and", of_brand: "of La Bonanza.", btn_register: "Create my account"
+    },
+    dashboard: {
+      welcome_user: "Hello, {name}!", summary_today: "Today's summary", traveler_subtitle: "Find your next destination",
+      role_hotel: "Host", role_traveler: "Traveler", monthly_earnings: "Monthly Earnings", vs_last_month: "vs. last month",
+      active_bookings: "Active Bookings", no_pending: "No pending", my_hotels: "My Hotels",
+      register_property: "Register property", empty_title: "No properties yet",
+      empty_desc: "Start publishing to see your statistics here.", btn_new_property: "Publish now",
+      search_place: "Where are you going?", btn_search: "Search", recommended_destinations: "Recommended destinations"
+    },
+    myRooms: {
+      title: "My Rooms", subtitle: "Manage and organize your property units", btn_new: "New Room",
+      search_placeholder: "Search by name or type...", filter_all: "All statuses",
+      status_disponible: "Available", status_ocupado: "Occupied", status_mantenimiento: "In Maintenance",
+      max_cap: "{num} guests max.", btn_edit: "Edit unit", add_another: "Add another unit"
+    },
+    hostLayout: {
+      host_panel: "Host Panel", logout_btn: "Logout", logout_tooltip: "Exit panel",
+      menu_summary: "Summary", menu_rooms: "Rooms", menu_reservations: "Reservations",
+      alert_save: "Room saved successfully!", res_panel_title: "Reservations Panel", res_panel_soon: "Coming soon: Manage your bookings here."
     },
     hero: {
-      title1: "Find the perfect stay",
-      title2: "for your dream vacation",
-      subtitle: "Discover exclusive properties nationally and internationally. The perfect place to live or invest is waiting for you.",
-      cta: "View Cabins",
-      search_dest: "Destination",
-      search_dest_ph: "Where are you going?",
-      search_btn: "SEARCH"
+      title1: "Find the perfect stay", title2: "for your dream vacation",
+      subtitle: "Discover exclusive properties nationally and internationally. The perfect place to live or invest is waiting for you."
     },
-    properties: {
-      featured: "Featured Properties",
-      all: "All Properties",
-      section_title: "Featured Accommodations",
-      section_subtitle: "Exclusive selection, directly managed to guarantee your peace of mind.",
-      btn_view_all: "View all properties",
-      price_night: "Price per night"
-    },
-    common: {
-      loading: "Loading...",
-      error: "An error occurred",
-      details: "View Details",
-      price_night: "/ night"
+    adminPanel: {
+      menu_rentals: "Rentals",
+      menu_sales: "Sales",
+      menu_reservations: "Bookings",
+      logout: "Logout",
+      btn_add_new: "Add New",
+      table_client: "Client",
+      table_status: "Status",
+      table_actions: "Actions",
+      confirm_delete_res: "Delete this booking?",
+      confirm_delete_prop: "Delete this property?",
+      modal_create: "Create",
+      modal_update: "Update",
+      type_rental: "Rental",
+      type_sale: "Sale Property",
+      label_gallery: "Image Gallery",
+      label_desc: "Description",
+      ph_title: "Property Title",
+      ph_location: "Location (City, Area)",
+      ph_price_cop: "Price in COP",
+      ph_price_usd: "Price in USD",
+      ph_price_night: "Price per night",
+      ph_desc: "Describe property details...",
+      ph_rooms: "Rooms",
+      ph_bathrooms: "Bathrooms",
+      btn_save_changes: "Save Changes",
+      btn_publish: "Publish Now",
+      alert_success: "Saved successfully!",
+      error_upload: "Upload error: "
     },
     details: {
-      back: "Back to list",
-      price_night: "Price per night",
-      book_now: "Reserve Now",
-      no_charge: "You won't be charged yet",
-      services: "Amenities",
-      description: "Description",
-      loading: "Loading...",
+      back: "Back to properties",
+      loading: "Loading details",
+      not_found: "Property not found",
+      description: "About this place",
+      services: "What this place offers",
+      no_services: "No services specified."
+    },
+    amenities: {
       wifi: "Free Wifi",
       ac: "Air Conditioning",
       pool: "Swimming Pool",
-      default_desc: "Enjoy an unforgettable stay at {hotelName}. This accommodation has all the amenities to make your vacation perfect."
+      tv: "Smart TV",
+      kitchen: "Equipped Kitchen",
+      parking: "Parking",
+      balcony: "Balcony",
+      security: "Security",
+      coffee: "Coffee Maker",
+      view: "Ocean View"
     },
-    catalog: {
-      title: "Full Catalog",
-      subtitle: "Explore our 5 exclusive options in Santa Marta",
-      back_button: "Back to Home"
+    about: {
+      title: "ABOUT US",
+      subtitle: "Your gateway to unforgettable experiences",
+      description: "At Reservas Turismo, we are dedicated to connecting travelers with the best accommodations and real estate opportunities. With years of experience in the market, we guarantee safety, comfort, and personalized service.",
+      mission: "Our Mission",
+      mission_text: "To transform the way people travel and find their ideal home by offering transparency and quality in every booking.",
+      stats_hotels: "Accommodations",
+      stats_clients: "Happy Clients",
+      stats_years: "Years of Experience"
     },
-    footer: {
-      brand_desc: "Tourism agency specializing in cabins and studio apartments in Santa Marta. Unique experiences facing the sea.",
-      contact_title: "Contact",
-      chat_support: "Support Chat & Reservations",
-      always_open: "Always open",
-      legal_title: "Legal",
-      about_us: "About Us",
-      terms: "Terms and Conditions",
-      privacy: "Privacy Policy",
-      rnt: "RNT (National Registry)",
-      rights: "All rights reserved."
-    },
-    auth: {
-      login_title: "Access your account",
-      email_label: "Email",
-      email_ph: "example@mail.com",
-      password_label: "Password",
-      password_ph: "••••••••",
-      forgot_pass: "Forgot your password?",
-      btn_enter: "Sign In",
-      btn_validating: "Validating reservation...",
-      or_continue: "Or continue with",
-      secure_text: "Secure access for Administration, Hotels, and Clients",
-      tooltip_show: "Open blinds (Show)",
-      tooltip_hide: "Close blinds (Hide)",
-      error_key: "Oops! That key doesn't open this room. Invalid credentials. If you forgot your key, use the recover button."
-    },
-    register: {
-      title: "Create Account",
-      subtitle: "Select how you want to use the platform",
-      role_traveler: "I am a Traveler",
-      role_hotel: "I am a Hotel",
-      name: "First Name",
-      lastname: "Last Name",
-      name_ph: "Your name",
-      lastname_ph: "Your last name",
-      company_name: "Establishment Name",
-      company_ph: "Ex: Grand Paradise Hotel",
-      nit: "Tax ID / NIT",
-      nit_ph: "Ex: 900.123.456-7",
-      email: "Email",
-      email_corp: "Corporate Email",
-      email_ph: "mail@example.com",
-      email_corp_ph: "reservations@yourhotel.com",
-      password: "Password",
-      password_ph: "Create password",
-      accept_terms: "I accept the",
-      terms_link: "Terms and Conditions",
-      and: "and the",
-      privacy_link: "Privacy Policy",
-      of_brand: "of ReservaLaBonanza.",
-      btn_register: "Sign Up"
-    },
-    recover: {
-      title: "Recover Password",
-      desc: "Enter your email and we will send you instructions.",
-      label_email: "Registered Email",
-      placeholder: "example@mail.com",
-      btn_cancel: "Cancel",
-      btn_send: "Send",
-      toast_success: "We have sent a recovery link to"
-    }
   },
 
   /* ========================================================================
    * 3. FRANÇAIS (FR)
    * ======================================================================== */
   fr: {
-    navbar: {
-      home: "Accueil",
-      properties: "Propriétés",
-      about: "À propos",
-      contact: "Contact",
-      login: "Connexion",
-      logout: "Déconnexion",
-      sales: "vente", // AGREGADO (Significa Bienes Raíces)
-      profile: "Mon Profil"
+    common: { loading: "Chargement...", error: "Une erreur est survenue", details: "Détails", price_night: "/ nuit", night: "nuit", language: "Langue", back_home: "Retour à l'accueil" },
+    navbar: { logout: "Déconnexion", profile: "Profil", login: "Connexion", register: "S'inscrire", home: "Accueil", properties: "Propriétés", sales: "Ventes", about: "À propos", contact: "Contact" },
+    footer: {
+      brand_desc: "Votre allié fiable pour trouver les meilleurs hébergements et expériences dans les Caraïbes colombiennes.",
+      contact_title: "Contact", chat_support: "Chat de support", always_open: "Attention 24/7",
+      legal_title: "Légal", about_us: "À propos", terms: "Conditions", privacy: "Confidentialité",
+      rnt: "RNT (Registre National)", rights: "Tous droits réservés."
     },
-    loginPage: {
-      welcome: "Bienvenue",
-      subtitle: "Accédez à votre compte voyageur ou gérez votre hôtel.",
-      travelers: "Voyageurs Fréquents",
-      hotel_mgmt: "Gestion Hôtelière",
-      tab_login: "Connexion",
-      tab_register: "S'inscrire",
-      copyright: "© 2026 ReservaLaBonanza",
-      toast_welcome: "Bienvenue",
-      toast_searching: "Recherche de propriétés...",
-      email: "Adresse E-mail",
-      password: "Mot de passe",
-      forgot: "Mot de passe oublié?",
-      enter: "Se connecter",
-      register_demo: "Inscrire Démo"
+    sales: {
+      title: "Portfolio de ventes", consult_price: "Consulter le prix", view_details_gallery: "Détails et Galerie",
+      catalog_title: "Catalogue des ventes", investment_opportunities: "Opportunités d'investissement",
+      properties_for_sale_in: "Propriétés à vendre à", no_properties_available_in: "Aucune propriété à",
+      try_searching: "Essayez Cartagena ou Santa Marta.", explore_all: "Toutes les ventes",
+      sale_price: "Prix de vente", consult: "Consulter", talk_to_advisor: "PARLER À UN CONSEILLER", image_alt: "Vue"
+    },
+    booking: {
+      alert_select_dates: "Sélectionnez les dates de votre séjour", check_in: "Arrivée", check_out: "Départ",
+      add_date: "Ajouter", guests: "Voyageurs", travelers_singular: "Voyageur", travelers_plural: "Voyageurs",
+      book_now: "Réserver", cleaning_fee: "Frais de ménage", total: "Total", select_dates_for_total: "Sélectionnez des dates"
+    },
+    reservation: {
+      alert_valid_dates: "Dates valides s.v.p.", alert_save_error: "Erreur :",
+      created_title: "Réservation créée !", created_subtitle: "Payez pour confirmer.", back: "Retour",
+      finish_title: "Finaliser 🔒", dates: "Dates", addons: "Suppléments", cleaning: "Ménage",
+      airport_taxi: "Taxi aéroport", your_data: "Vos infos", first_name: "Prénom", last_name: "Nom",
+      document: "ID", whatsapp: "WhatsApp", email: "E-mail", people: "personnes", included: "Inclus",
+      taxi: "Taxi", processing: "Traitement...", confirm: "Confirmer"
+    },
+    dashboard: {
+      welcome_user: "Bonjour, {name}!", summary_today: "Résumé d'aujourd'hui", traveler_subtitle: "Trouvez votre prochaine destination",
+      role_hotel: "Hôte", role_traveler: "Voyageur", monthly_earnings: "Gains mensuels", vs_last_month: "vs. mois dernier",
+      active_bookings: "Réservations actives", no_pending: "Pas de retard", my_hotels: "Mes Hôtels",
+      register_property: "Enregistrer", empty_title: "Pas encore de propriétés",
+      empty_desc: "Publiez pour voir vos stats ici.", btn_new_property: "Publier maintenant",
+      search_place: "Où allez-vous?", btn_search: "Chercher", recommended_destinations: "Destinations recommandées"
+    },
+    myRooms: {
+      title: "Mes Chambres", subtitle: "Gérez vos unités", btn_new: "Nouvelle Chambre",
+      search_placeholder: "Chercher...", filter_all: "Tous les statuts",
+      status_disponible: "Disponible", status_ocupado: "Occupé", status_mantenimiento: "Maintenance",
+      max_cap: "{num} pers. max.", btn_edit: "Modifier", add_another: "Ajouter"
+    },
+    hostLayout: {
+      host_panel: "Panneau Hôte", logout_btn: "Déconnexion", logout_tooltip: "Quitter",
+      menu_summary: "Résumé", menu_rooms: "Chambres", menu_reservations: "Réservations",
+      alert_save: "Enregistré!", res_panel_title: "Réservations", res_panel_soon: "Bientôt disponible."
     },
     hero: {
-      title1: "Trouvez le séjour parfait",
-      title2: "pour vos vacances de rêve",
-      subtitle: "Découvrez des propriétés exclusives au niveau national et international. L'endroit idéal pour vivre ou investir vous attend.",
-      cta: "Voir les Cabanes",
-      search_dest: "Destination",
-      search_dest_ph: "Où allez-vous ?",
-      search_dates: "Arrivée - Départ",
-      search_check_in: "Arrivée",
-      search_check_out: "Départ",
-      search_guests: "Voyageurs",
-      search_guests_ph: "Ajouter des voyageurs",
-      search_btn: "RECHERCHER"
+      title1: "Trouvez le séjour parfait", title2: "pour vos vacances de rêve",
+      subtitle: "Découvrez des propriétés exclusives. L'endroit idéal pour vivre ou investir vous attend."
     },
-    properties: {
-      featured: "Propriétés en Vedette",
-      all: "Toutes les Propriétés",
-      section_title: "Hébergements en Vedette",
-      section_subtitle: "Sélection exclusive, gérée directement pour garantir votre tranquillité.",
-      btn_view_all: "Voir toutes les propriétés",
-      price_night: "Prix par nuit"
-    },
-    common: {
-      loading: "Chargement...",
-      error: "Une erreur est survenue",
-      details: "Voir Détails",
-      price_night: "/ nuit"
+    adminPanel: {
+      menu_rentals: "Locations",
+      menu_sales: "Ventes",
+      menu_reservations: "Réservations",
+      logout: "Déconnexion",
+      btn_add_new: "Ajouter",
+      table_client: "Client",
+      table_status: "État",
+      table_actions: "Actions",
+      confirm_delete_res: "Supprimer cette réservation ?",
+      confirm_delete_prop: "Supprimer cette propriété ?",
+      modal_create: "Créer",
+      modal_update: "Modifier",
+      type_rental: "Hébergement",
+      type_sale: "Propriété à Vendre",
+      label_gallery: "Galerie d'images",
+      label_desc: "Description",
+      ph_title: "Titre de la propriété",
+      ph_location: "Lieu (Ville, Secteur)",
+      ph_price_cop: "Prix en COP",
+      ph_price_usd: "Prix en USD",
+      ph_price_night: "Prix par nuit",
+      ph_desc: "Description détaillée...",
+      ph_rooms: "Chambres",
+      ph_bathrooms: "Salles de bain",
+      btn_save_changes: "Enregistrer",
+      btn_publish: "Publier",
+      alert_success: "Enregistré avec succès !",
+      error_upload: "Erreur de téléchargement : "
     },
     details: {
-      back: "Retour à la liste",
-      price_night: "Prix par nuit",
-      book_now: "Réserver",
-      no_charge: "Aucun frais pour le moment",
-      services: "Équipements",
-      description: "Description",
-      loading: "Chargement...",
+      back: "Retour aux propriétés",
+      loading: "Chargement des détails",
+      not_found: "Propriété non trouvée",
+      description: "À propos de ce lieu",
+      services: "Ce que ce lieu offre",
+      no_services: "Aucun service spécifié."
+    },
+    amenities: {
       wifi: "Wifi Gratuit",
       ac: "Climatisation",
       pool: "Piscine",
-      default_desc: "Profitez d'un séjour inoubliable à {hotelName}. Cet hébergement dispose de toutes les commodités pour rendre vos vacances parfaites."
+      tv: "Smart TV",
+      kitchen: "Cuisine Équipée",
+      parking: "Parking",
+      balcony: "Balcon",
+      security: "Sécurité",
+      coffee: "Machine à Café",
+      view: "Vue sur la Mer"
     },
-    catalog: {
-      title: "Catalogue Complet",
-      subtitle: "Explorez nos 5 options exclusives à Santa Marta",
-      back_button: "Retour à l'accueil"
+    contact: {
+      title: "CONTACT",
+      subtitle: "Nous sommes là pour vous aider",
+      send_email: "Envoyer un e-mail",
+      footer: "Reservas Turismo © 2026"
     },
-    footer: {
-      brand_desc: "Agence de tourisme spécialisée dans les cabanes et studios à Santa Marta. Des expériences uniques face à la mer.",
-      contact_title: "Contact",
-      chat_support: "Chat Support & Réservations",
-      always_open: "Toujours ouvert",
-      legal_title: "Légal",
-      about_us: "À propos de nous",
-      terms: "Termes et Conditions",
-      privacy: "Politique de Confidentialité",
-      rnt: "RNT (Registre National)",
-      rights: "Tous droits réservés."
+    about: {
+      title: "À PROPOS DE NOUS",
+      subtitle: "Votre porte d'entrée vers des expériences inoubliables",
+      description: "Chez Reservas Turismo, nous nous consacrons à connecter les voyageurs avec les meilleurs hébergements et opportunités immobilières. Avec des années d'expérience sur le marché, nous garantissons sécurité, confort et service personnalisé.",
+      mission: "Notre Mission",
+      mission_text: "Transformer la façon dont les gens voyagent et trouvent leur foyer idéal, en offrant transparence et qualité à chaque réservation.",
+      stats_hotels: "Hébergements",
+      stats_clients: "Clients Heureux",
+      stats_years: "Années d'Expérience"
     },
-    auth: {
-      login_title: "Accédez à votre compte",
-      email_label: "E-mail",
-      email_ph: "exemple@mail.com",
-      password_label: "Mot de passe",
-      password_ph: "••••••••",
-      forgot_pass: "Mot de passe oublié ?",
-      btn_enter: "Entrer",
-      btn_validating: "Validation de la réservation...",
-      or_continue: "Ou continuez avec",
-      secure_text: "Accès sécurisé pour Administration, Hôtels et Clients",
-      tooltip_show: "Ouvrir les stores (Voir)",
-      tooltip_hide: "Fermer les stores (Cacher)",
-      error_key: "Oups! Cette clé n'ouvre pas cette chambre. Identifiants invalides."
-    },
-    register: {
-      title: "Créer un Compte",
-      subtitle: "Sélectionnez comment vous souhaitez utiliser la plateforme",
-      role_traveler: "Je suis Voyageur",
-      role_hotel: "Je suis Hôtelier",
-      name: "Prénom",
-      lastname: "Nom",
-      name_ph: "Votre prénom",
-      lastname_ph: "Votre nom",
-      company_name: "Nom de l'établissement",
-      company_ph: "Ex: Hôtel Grand Paradis",
-      nit: "Numéro Fiscal / NIT",
-      nit_ph: "Ex: 900.123.456-7",
-      email: "E-mail",
-      email_corp: "E-mail Professionnel",
-      email_ph: "mail@exemple.com",
-      email_corp_ph: "reservations@votrehotel.com",
-      password: "Mot de passe",
-      password_ph: "Créer un mot de passe",
-      accept_terms: "J'accepte les",
-      terms_link: "Termes et Conditions",
-      and: "et la",
-      privacy_link: "Politique de Confidentialité",
-      of_brand: "de ReservaLaBonanza.",
-      btn_register: "S'inscrire"
-    },
-    recover: {
-      title: "Récupérer le mot de passe",
-      desc: "Entrez votre e-mail et nous vous enverrons les instructions.",
-      label_email: "E-mail enregistré",
-      placeholder: "exemple@mail.com",
-      btn_cancel: "Annuler",
-      btn_send: "Envoyer",
-      toast_success: "Nous avons envoyé un lien de récupération à"
-    }
   },
 
   /* ========================================================================
-   * 4. Aleman (DE)
+   * 4. DEUTSCH (DE)
    * ======================================================================== */
   de: {
-    navbar: {
-      home: "Startseite",
-      properties: "Unterkünfte",
-      about: "Über uns",
-      contact: "Kontakt",
-      login: "Anmelden",
-      logout: "Abmelden",
-      sales: "Verkäufe",
-      profile: "Mein Profil"
+    common: { loading: "Laden...", error: "Fehler", details: "Details", price_night: "/ Nacht", night: "Nacht", language: "Sprache", back_home: "Zur Startseite" },
+    navbar: { logout: "Abmelden", profile: "Profil", login: "Anmelden", register: "Registrieren", home: "Startseite", properties: "Unterkünfte", sales: "Verkauf", about: "Über uns", contact: "Kontakt" },
+    footer: {
+      brand_desc: "Ihr zuverlässiger Partner für die besten Unterkünfte in der kolumbianischen Karibik.",
+      contact_title: "Kontakt", chat_support: "Support-Chat", always_open: "24/7 Erreichbar",
+      legal_title: "Rechtliches", about_us: "Über uns", terms: "AGB", privacy: "Datenschutz",
+      rnt: "RNT", rights: "Alle Rechte vorbehalten."
     },
-    loginPage: {
-      welcome: "Willkommen",
-      subtitle: "Greifen Sie auf Ihr Konto zu oder verwalten Sie Ihr Hotel.",
-      travelers: "Vielflieger / Reisende",
-      hotel_mgmt: "Hotelverwaltung",
-      tab_login: "Anmelden",
-      tab_register: "Registrieren",
-      copyright: "© 2026 ReservaLaBonanza",
-      toast_welcome: "Willkommen",
-      toast_searching: "Suche nach Unterkünften...",
-      email: "E-Mail-Adresse",
-      password: "Passwort",
-      forgot: "Passwort vergessen?",
-      enter: "Anmelden",
-      register_demo: "Demo registrieren"
+    sales: {
+      title: "Verkaufsportfolio", consult_price: "Preis anfragen", view_details_gallery: "Galerie ansehen",
+      catalog_title: "Verkaufskatalog", investment_opportunities: "Investitionsmöglichkeiten",
+      properties_for_sale_in: "Immobilien in", no_properties_available_in: "Keine Immobilien in",
+      try_searching: "Suchen Sie in Cartagena.", explore_all: "Alle Verkäufe",
+      sale_price: "Verkaufspreis", consult: "Anfragen", talk_to_advisor: "BERATER SPRECHEN", image_alt: "Ansicht"
+    },
+    booking: {
+      alert_select_dates: "Daten auswählen", check_in: "Anreise", check_out: "Abreise",
+      add_date: "Datum", guests: "Gäste", travelers_singular: "Reisender", travelers_plural: "Reisende",
+      book_now: "Buchen", cleaning_fee: "Reinigung", total: "Gesamt", select_dates_for_total: "Daten wählen"
+    },
+    dashboard: {
+      welcome_user: "Hallo, {name}!", summary_today: "Heutige Übersicht", traveler_subtitle: "Finden Sie Ihr nächstes Ziel",
+      role_hotel: "Gastgeber", role_traveler: "Reisender", monthly_earnings: "Monatlicher Gewinn", vs_last_month: "vs. Letzter Monat",
+      active_bookings: "Aktive Buchungen", no_pending: "Nichts anstehend", my_hotels: "Meine Hotels",
+      register_property: "Eigentum registrieren", empty_title: "Noch keine Immobilien",
+      empty_desc: "Veröffentlichen Sie, um Statistiken zu sehen.", btn_new_property: "Jetzt veröffentlichen",
+      search_place: "Wohin gehen Sie?", btn_search: "Suchen", recommended_destinations: "Empfohlene Ziele"
+    },
+    myRooms: {
+      title: "Meine Zimmer", subtitle: "Verwalten Sie Ihre Einheiten", btn_new: "Neues Zimmer",
+      search_placeholder: "Suchen...", filter_all: "Alle Status",
+      status_disponible: "Verfügbar", status_ocupado: "Besetzt", status_mantenimiento: "Wartung",
+      max_cap: "Max. {num} Pers.", btn_edit: "Bearbeiten", add_another: "Hinzufügen"
+    },
+    hostLayout: {
+      host_panel: "Gastgeber-Panel", logout_btn: "Abmelden", logout_tooltip: "Beenden",
+      menu_summary: "Übersicht", menu_rooms: "Zimmer", menu_reservations: "Buchungen",
+      alert_save: "Gespeichert!", res_panel_title: "Buchungen", res_panel_soon: "Demnächst."
     },
     hero: {
-      title1: "Finden Sie den perfekten Aufenthalt",
-      title2: "für Ihren Traumurlaub",
-      subtitle: "Entdecken Sie exklusive Immobilien national und international. Der perfekte Ort zum Leben oder Investieren erwartet Sie.",
-      cta: "Hütten ansehen",
-      search_dest: "Reiseziel",
-      search_dest_ph: "Wohin gehst du?",
-      search_dates: "Anreise - Abreise",
-      search_check_in: "Anreise",
-      search_check_out: "Abreise",
-      search_guests: "Reisende",
-      search_guests_ph: "Wie viele?",
-      search_btn: "SUCHEN"
+      title1: "Finden Sie den perfekten Aufenthalt", title2: "für Ihren Traumurlaub",
+      subtitle: "Entdecken Sie exklusive Immobilien. Der perfekte Ort zum Leben oder Investieren wartet auf Sie."
     },
-    properties: {
-      featured: "Beliebte Immobilien",
-      all: "Alle Immobilien",
-      section_title: "Ausgewählte Unterkünfte",
-      section_subtitle: "Exklusive Auswahl, direkt verwaltet für Ihre Sicherheit.",
-      btn_view_all: "Alle Immobilien ansehen",
-      price_night: "Preis pro Nacht"
-    },
-    common: {
-      loading: "Laden...",
-      error: "Ein Fehler ist aufgetreten",
-      details: "Details anzeigen",
-      price_night: "/ Nacht"
+    adminPanel: {
+      menu_rentals: "Vermietungen",
+      menu_sales: "Verkäufe",
+      menu_reservations: "Buchungen",
+      logout: "Abmelden",
+      btn_add_new: "Neu hinzufügen",
+      table_client: "Kunde",
+      table_status: "Status",
+      table_actions: "Aktionen",
+      confirm_delete_res: "Diese Buchung löschen?",
+      confirm_delete_prop: "Diese Immobilie löschen?",
+      modal_create: "Erstellen",
+      modal_update: "Aktualisieren",
+      type_rental: "Unterkunft",
+      type_sale: "Verkaufsobjekt",
+      label_gallery: "Bildergalerie",
+      label_desc: "Beschreibung",
+      ph_title: "Objekttitel",
+      ph_location: "Ort (Stadt, Viertel)",
+      ph_price_cop: "Preis in COP",
+      ph_price_usd: "Preis in USD",
+      ph_price_night: "Preis pro Nacht",
+      ph_desc: "Objektdetails beschreiben...",
+      ph_rooms: "Zimmer",
+      ph_bathrooms: "Badezimmer",
+      btn_save_changes: "Änderungen speichern",
+      btn_publish: "Jetzt veröffentlichen",
+      alert_success: "Erfolgreich gespeichert!",
+      error_upload: "Upload-Fehler: "
     },
     details: {
-      back: "Zurück zur Liste",
-      price_night: "Preis pro Nacht",
-      book_now: "Jetzt buchen",
-      no_charge: "Es wird noch keine Gebühr erhoben",
-      services: "Serviceleistungen",
-      description: "Beschreibung",
-      loading: "Laden...",
-      wifi: "Gratis WLAN",
+      back: "Zurück zu den Unterkünften",
+      loading: "Details werden geladen",
+      not_found: "Unterkunft nicht gefunden",
+      description: "Über diese Unterkunft",
+      services: "Was dieser Ort bietet",
+      no_services: "Keine Dienstleistungen angegeben."
+    },
+    amenities: {
+      wifi: "Kostenloses WLAN",
       ac: "Klimaanlage",
-      pool: "Pool",
-      default_desc: "Genießen Sie einen unvergesslichen Aufenthalt im {hotelName}. Diese Unterkunft bietet alle Annehmlichkeiten für einen perfekten Urlaub."
+      pool: "Schwimmbad",
+      tv: "Smart-TV",
+      kitchen: "Ausgestattete Küche",
+      parking: "Parkplatz",
+      balcony: "Balkon",
+      security: "Sicherheit",
+      coffee: "Kaffeemaschine",
+      view: "Meerblick"
     },
-    catalog: {
-      title: "Vollständiger Katalog",
-      subtitle: "Entdecken Sie unsere 5 exklusiven Optionen in Santa Marta",
-      back_button: "Zurück zur Startseite"
+    contact: {
+      title: "KONTAKT",
+      subtitle: "Wir sind hier, um Ihnen zu helfen",
+      send_email: "E-Mail senden",
+      footer: "Reservas Turismo © 2026"
     },
-    footer: {
-      brand_desc: "Auf Hütten und Studio-Apartments in Santa Marta spezialisierte Tourismusagentur. Einzigartige Erlebnisse direkt am Meer.",
-      contact_title: "Kontakt",
-      chat_support: "Support-Chat & Reservierungen",
-      always_open: "Immer geöffnet",
-      legal_title: "Rechtliches",
-      about_us: "Über uns",
-      terms: "AGB",
-      privacy: "Datenschutz",
-      rnt: "RNT (Nationales Register)",
-      rights: "Alle Rechte vorbehalten."
+    about: {
+      title: "ÜBER UNS",
+      subtitle: "Ihr Tor zu unvergesslichen Erlebnissen",
+      description: "Bei Reservas Turismo widmen wir uns der Verbindung von Reisenden mit den besten Unterkünften und Immobilienangeboten. Mit jahrelanger Erfahrung auf dem Markt garantieren wir Sicherheit, Komfort und persönlichen Service.",
+      mission: "Unsere Mission",
+      mission_text: "Die Art und Weise, wie Menschen reisen und ihr ideales Zuhause finden, zu verändern, indem wir Transparenz und Qualität bei jeder Buchung bieten.",
+      stats_hotels: "Unterkünfte",
+      stats_clients: "Zufriedene Kunden",
+      stats_years: "Jahre Erfahrung"
     },
-    auth: {
-      login_title: "Anmelden",
-      email_label: "E-Mail",
-      email_ph: "beispiel@mail.com",
-      password_label: "Passwort",
-      password_ph: "••••••••",
-      forgot_pass: "Passwort vergessen?",
-      btn_enter: "Einloggen",
-      btn_validating: "Validierung der Reservierung...",
-      or_continue: "Oder weiter mit",
-      secure_text: "Sicherer Zugang für Verwaltung, Hotels und Kunden",
-      tooltip_show: "Anzeigen",
-      tooltip_hide: "Verbergen",
-      error_key: "Ups! Dieser Schlüssel öffnet dieses Zimmer nicht. Ungültige Anmeldedaten."
-    },
-    register: {
-      title: "Konto erstellen",
-      subtitle: "Wählen Sie, wie Sie die Plattform nutzen möchten",
-      role_traveler: "Ich bin Reisender",
-      role_hotel: "Ich bin ein Hotel",
-      name: "Vorname",
-      lastname: "Nachname",
-      name_ph: "Dein Vorname",
-      lastname_ph: "Dein Nachname",
-      company_name: "Name der Unterkunft",
-      company_ph: "z.B. Hotel Paradies",
-      nit: "Steuernummer / NIT",
-      nit_ph: "z.B. 900.123.456-7",
-      email: "E-Mail",
-      email_corp: "Geschäftliche E-Mail",
-      email_ph: "mail@beispiel.com",
-      email_corp_ph: "reservierung@deinhotel.com",
-      password: "Passwort",
-      password_ph: "Passwort erstellen",
-      accept_terms: "Ich akzeptiere die",
-      terms_link: "AGB",
-      and: "und die",
-      privacy_link: "Datenschutzbestimmungen",
-      of_brand: "von ReservaLaBonanza.",
-      btn_register: "Registrieren"
-    },
-    recover: {
-      title: "Passwort wiederherstellen",
-      desc: "Geben Sie Ihre E-Mail ein und wir senden Ihnen Anweisungen.",
-      label_email: "Registrierte E-Mail",
-      placeholder: "beispiel@mail.com",
-      btn_cancel: "Abbrechen",
-      btn_send: "Senden",
-      toast_success: "Wir haben einen Link zur Wiederherstellung gesendet an"
-    }
   },
 
-    /* ========================================================================
-   * 5. CHINO SIMPLIFICADO(ZH)
+  /* ========================================================================
+   * 5. CHINESE (ZH)
    * ======================================================================== */
   zh: {
-    navbar: {
-      home: "首页",
-      properties: "房源",
-      about: "关于我们",
-      contact: "接触",
-      login: "登录",
-      logout: "退出登录",
-      sales: "销售",
-      profile: "个人资料"
+    common: { loading: "加载中...", error: "错误", details: "详情", price_night: "/ 晚", night: "晚", language: "语言", back_home: "返回首页" },
+    navbar: { logout: "注销", profile: "个人资料", login: "登录", register: "注册", home: "首页", properties: "房源", sales: "出售", about: "关于我们", contact: "联系我们" },
+    footer: {
+      brand_desc: "您在哥伦比亚加勒比地区寻找最佳住宿的可靠伙伴。",
+      contact_title: "联系我们", chat_support: "在线客服", always_open: "24/7 服务",
+      legal_title: "法律条款", about_us: "关于我们", terms: "条款", privacy: "隐私",
+      rnt: "RNT", rights: "保留所有权利。"
     },
-    loginPage: {
-      welcome: "欢迎",
-      subtitle: "访问您的旅客账户或管理您的酒店。",
-      travelers: "常旅客",
-      hotel_mgmt: "酒店管理",
-      tab_login: "登录",
-      tab_register: "注册",
-      copyright: "© 2026 ReservaLaBonanza",
-      toast_welcome: "欢迎",
-      toast_searching: "正在搜索房源...",
-      email: "电子邮件",
-      password: "密码",
-      forgot: "忘记密码？",
-      enter: "登录",
-      register_demo: "注册演示"
+    sales: {
+      title: "销售项目", consult_price: "咨询价格", view_details_gallery: "查看详情",
+      catalog_title: "销售目录", investment_opportunities: "投资机会",
+      properties_for_sale_in: "房源在", no_properties_available_in: "暂无房源在",
+      try_searching: "尝试搜索卡塔赫纳。", explore_all: "查看全部",
+      sale_price: "售价", consult: "咨询", talk_to_advisor: "联系顾问", image_alt: "图片"
+    },
+    dashboard: {
+      welcome_user: "{name}，你好！", summary_today: "今日摘要", traveler_subtitle: "寻找下一个目的地",
+      role_hotel: "房东", role_traveler: "旅客", monthly_earnings: "本月收入", vs_last_month: "对比上月",
+      active_bookings: "进行中的预订", no_pending: "暂无待办", my_hotels: "我的酒店",
+      register_property: "注册房源", empty_title: "暂无房源",
+      empty_desc: "开始发布以查看数据。", btn_new_property: "立即发布",
+      search_place: "你想去哪？", btn_search: "搜索", recommended_destinations: "推荐目的地"
+    },
+    myRooms: {
+      title: "我的客房", subtitle: "管理房源单元", btn_new: "新增客房",
+      search_placeholder: "搜索...", filter_all: "所有状态",
+      status_disponible: "空闲", status_ocupado: "已订", status_mantenimiento: "维护中",
+      max_cap: "最多 {num} 人", btn_edit: "编辑", add_another: "继续添加"
+    },
+    hostLayout: {
+      host_panel: "房东管理后台", logout_btn: "注销", logout_tooltip: "退出",
+      menu_summary: "摘要", menu_rooms: "客房", menu_reservations: "预订",
+      alert_save: "保存成功！", res_panel_title: "预订管理", res_panel_soon: "即将推出。"
     },
     hero: {
-      title1: "寻找完美的住宿",
-      title2: "开启您的梦想假期",
-      subtitle: "探索国内外独家房源。这里是您生活或投资的理想之地。",
-      cta: "查看小木屋",
-      search_dest: "目的地",
-      search_dest_ph: "您想去哪里？",
-      search_dates: "入住 - 退房",
-      search_check_in: "入住",
-      search_check_out: "退房",
-      search_guests: "房客",
-      search_guests_ph: "人数？",
-      search_btn: "搜索"
+      title1: "寻找完美住宿", title2: "开启梦幻假期",
+      subtitle: "发现国内外独家房源。这里是您生活或投资的理想之地。"
     },
-    properties: {
-      featured: "精选房源",
-      all: "所有房源",
-      section_title: "特色住宿",
-      section_subtitle: "严格筛选，直接管理，确保您住得安心。",
-      btn_view_all: "查看所有房源",
-      price_night: "每晚价格"
-    },
-    common: {
-      loading: "加载中...",
-      error: "发生错误",
-      details: "查看详情",
-      price_night: "/ 晚"
+    adminPanel: {
+      menu_rentals: "租赁管理",
+      menu_sales: "销售管理",
+      menu_reservations: "预订管理",
+      logout: "注销",
+      btn_add_new: "添加新项",
+      table_client: "客户",
+      table_status: "状态",
+      table_actions: "操作",
+      confirm_delete_res: "确认删除此预订？",
+      confirm_delete_prop: "确认删除此房源？",
+      modal_create: "创建",
+      modal_update: "更新",
+      type_rental: "租赁房源",
+      type_sale: "出售房源",
+      label_gallery: "图集",
+      label_desc: "描述",
+      ph_title: "房源标题",
+      ph_location: "位置 (城市, 区域)",
+      ph_price_cop: "COP 价格",
+      ph_price_usd: "USD 价格",
+      ph_price_night: "每晚价格",
+      ph_desc: "描述详细信息...",
+      ph_rooms: "卧室",
+      ph_bathrooms: "浴室",
+      btn_save_changes: "保存更改",
+      btn_publish: "立即发布",
+      alert_success: "保存成功！",
+      error_upload: "上传错误: "
     },
     details: {
-      back: "返回列表",
-      price_night: "每晚价格",
-      book_now: "立即预订",
-      no_charge: "暂时不会收取任何费用",
-      services: "服务设施",
-      description: "描述",
-      loading: "加载中...",
-      wifi: "免费 Wifi",
+      back: "返回房源列表",
+      loading: "正在加载详情",
+      not_found: "未找到相关房源",
+      description: "关于此房源",
+      services: "该处提供的设施",
+      no_services: "未提供设施信息。"
+    },
+    amenities: {
+      wifi: "免费无线网络",
       ac: "空调",
       pool: "游泳池",
-      default_desc: "在 {hotelName} 享受难忘的时光。这里设施齐全，将为您的假期画上完美的句号。"
+      tv: "智能电视",
+      kitchen: "设备齐全的厨房",
+      parking: "停车场",
+      balcony: "阳台",
+      security: "安全监控",
+      coffee: "咖啡机",
+      view: "海景"
     },
-    catalog: {
-      title: "完整目录",
-      subtitle: "探索我们在圣玛尔塔的 5 个独家选择",
-      back_button: "返回首页"
+    contact: {
+      title: "联系我们",
+      subtitle: "我们竭诚为您服务",
+      send_email: "发送电子邮件",
+      footer: "Reservas Turismo © 2026"
     },
-    footer: {
-      brand_desc: "圣玛尔塔专业的小木屋和单身公寓旅游服务商。为您提供独特的海滨体验。",
-      contact_title: "联系我们",
-      chat_support: "聊天支持与预订",
-      always_open: "全天候开放",
-      legal_title: "法律信息",
-      about_us: "关于我们",
-      terms: "条款与条件",
-      privacy: "隐私政策",
-      rnt: "RNT (国家注册号)",
-      rights: "版权所有。"
+    about: {
+      title: "关于我们",
+      subtitle: "开启难忘体验的大门",
+      description: "在 Reservas Turismo，我们致力于为旅客连接优质的住宿和房地产机会。凭借多年的市场经验，我们保证安全、舒适和个性化的服务。",
+      mission: "我们的使命",
+      mission_text: "通过在每次预订中提供透明度和高质量，改变人们旅行和寻找理想家园的方式。",
+      stats_hotels: "住宿房源",
+      stats_clients: "快乐客户",
+      stats_years: "行业经验"
     },
-    auth: {
-      login_title: "登录您的账户",
-      email_label: "电子邮箱",
-      email_ph: "example@mail.com",
-      password_label: "密码",
-      password_ph: "••••••••",
-      forgot_pass: "忘记密码？",
-      btn_enter: "进入",
-      btn_validating: "正在验证预订...",
-      or_continue: "或通过以下方式继续",
-      secure_text: "管理端、酒店及客户的安全访问",
-      tooltip_show: "显示",
-      tooltip_hide: "隐藏",
-      error_key: "哎呀！这把钥匙打不开这间房。凭据无效。"
-    },
-    register: {
-      title: "创建账户",
-      subtitle: "选择您的身份",
-      role_traveler: "我是旅客",
-      role_hotel: "我是酒店商家",
-      name: "名字",
-      lastname: "姓氏",
-      name_ph: "您的名字",
-      lastname_ph: "您的姓氏",
-      company_name: "机构名称",
-      company_ph: "例如：世外桃源大酒店",
-      nit: "纳税识别号 / NIT",
-      nit_ph: "例如：900.123.456-7",
-      email: "电子邮箱",
-      email_corp: "企业邮箱",
-      email_ph: "mail@example.com",
-      email_corp_ph: "reservations@yourhotel.com",
-      password: "密码",
-      password_ph: "创建密码",
-      accept_terms: "我接受",
-      terms_link: "条款与条件",
-      and: "以及",
-      privacy_link: "隐私政策",
-      of_brand: "ReservaLaBonanza 的相关规定。",
-      btn_register: "注册"
-    },
-    recover: {
-      title: "找回密码",
-      desc: "输入您的电子邮箱，我们将向您发送说明。",
-      label_email: "注册邮箱",
-      placeholder: "example@mail.com",
-      btn_cancel: "取消",
-      btn_send: "发送",
-      toast_success: "我们已向以下地址发送了重置链接："
-    }
-  },
+  }
 };

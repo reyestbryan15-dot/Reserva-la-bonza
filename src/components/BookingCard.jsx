@@ -4,6 +4,7 @@ import { Star, Users, Calendar } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { useLanguage } from '../context/LanguageContext';
 
 const BookingCard = ({ 
   pricePerNight = 250000, 
@@ -18,6 +19,7 @@ const BookingCard = ({
 }) => {
   
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Estados iniciales
   const [startDate, setStartDate] = useState(null);
@@ -52,7 +54,7 @@ const BookingCard = ({
 
   const handleReservation = () => {
     if (!startDate || !endDate) {
-      alert("Por favor selecciona las fechas de tu estadía");
+      alert(t('booking.alert_select_dates'));
       return;
     }
 
@@ -73,7 +75,7 @@ const BookingCard = ({
       <div className="flex justify-between items-start mb-6">
         <div>
           <span className="text-2xl font-bold text-gray-900">{formatMoney(pricePerNight)}</span>
-          <span className="text-gray-500 text-sm"> / noche</span>
+          <span className="text-gray-500 text-sm"> {t('common.price_night')}</span>
         </div>
         <div className="flex items-center gap-1 text-sm font-bold text-gray-800">
           <Star size={16} fill="currentColor" className="text-yellow-400" />
@@ -85,34 +87,34 @@ const BookingCard = ({
       <div className="border border-gray-300 rounded-xl mb-4 overflow-hidden">
         <div className="grid grid-cols-2 border-b border-gray-300">
           <div className="p-2 border-r border-gray-300">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase">Llegada</label>
+            <label className="block text-[10px] font-bold text-gray-500 uppercase">{t('booking.check_in')}</label>
             <DatePicker
               selected={startDate}
               onChange={(date) => setStartDate(date)}
               excludeDates={excludedDates} 
               minDate={new Date()}
-              placeholderText="Agregue fecha"
+              placeholderText={t('booking.add_date')}
               className="w-full text-sm outline-none bg-transparent"
               dateFormat="dd/MM/yyyy"
             />
           </div>
           <div className="p-2">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase">Salida</label>
+            <label className="block text-[10px] font-bold text-gray-500 uppercase">{t('booking.check_out')}</label>
             <DatePicker
               selected={endDate}
               onChange={(date) => setEndDate(date)}
               excludeDates={excludedDates} 
               minDate={startDate || new Date()}
-              placeholderText="Agregue fecha"
+              placeholderText={t('booking.add_date')}
               className="w-full text-sm outline-none bg-transparent"
               dateFormat="dd/MM/yyyy"
             />
           </div>
         </div>
         <div className="p-3 bg-gray-50 flex justify-between items-center">
-          <span className="text-xs font-bold text-gray-500 uppercase">Huéspedes</span>
+          <span className="text-xs font-bold text-gray-500 uppercase">{t('booking.guests')}</span>
           <span className="text-sm font-medium text-gray-700">
-            {guestsCount} {guestsCount > 1 ? 'Viajeros' : 'Viajero'}
+            {guestsCount} {guestsCount > 1 ? t('booking.travelers_plural') : t('booking.travelers_singular')}
           </span>
         </div>
       </div>
@@ -121,27 +123,27 @@ const BookingCard = ({
         onClick={handleReservation}
         className="w-full bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg mb-4 transform active:scale-95"
       >
-        Reservar ahora
+        {t('booking.book_now')}
       </button>
 
       {nights > 0 ? (
         <div className="space-y-3 pt-2">
           <div className="flex justify-between text-gray-600 text-sm">
-            <span>{formatMoney(pricePerNight)} x {nights} noches</span>
+            <span>{formatMoney(pricePerNight)} x {nights} {t('common.night')}{nights === 1 ? '' : 's'}</span>
             <span>{formatMoney(subtotal)}</span>
           </div>
           <div className="flex justify-between text-gray-600 text-sm">
-            <span>Gastos de limpieza</span>
+            <span>{t('booking.cleaning_fee')}</span>
             <span>{formatMoney(cleaningFee)}</span>
           </div>
           <div className="border-t pt-4 flex justify-between items-center font-bold text-gray-900 text-lg">
-            <span>Total</span>
+            <span>{t('booking.total')}</span>
             <span className="text-indigo-600">{formatMoney(total)}</span>
           </div>
         </div>
       ) : (
         <p className="text-[11px] text-center text-gray-400 italic">
-          Selecciona fechas para calcular el precio total
+          {t('booking.select_dates_for_total')}
         </p>
       )}
     </div>

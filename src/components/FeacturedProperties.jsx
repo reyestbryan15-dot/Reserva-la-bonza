@@ -75,7 +75,7 @@ const FeaturedProperties = () => {
            <PropertyCard 
              key={prop.id}
              {...prop}
-             onClick={() => alert(`Próximamente: ${prop.title}`)}
+             onClick={() => alert(`${t('properties.coming_soon')}: ${prop.title}`)}
            />
         ))}
       </div>

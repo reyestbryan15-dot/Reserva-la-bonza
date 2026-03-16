@@ -5,6 +5,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from 'date-fns/locale';
 import { differenceInDays, format } from 'date-fns';
+import { useLanguage } from '../context/LanguageContext';
 
 // IMPORTACIONES DE BACKEND
 import { supabase } from '../../backend/supabaseClient'; 
@@ -15,6 +16,7 @@ registerLocale('es', es);
 const ReservationPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useLanguage();
 
   // --- ESTADOS DE LA RESERVA ---
   const [isProcessing, setIsProcessing] = useState(false);
@@ -91,7 +93,7 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!startDate || !endDate || nights < 1) {
-        alert("Por favor selecciona fechas válidas.");
+        alert(t('reservation.alert_valid_dates'));
         return;
     }
 
@@ -124,7 +126,7 @@ useEffect(() => {
         }
     } catch (error) {
         console.error("Error:", error);
-        alert("Error al guardar: " + error.message);
+        alert(`${t('reservation.alert_save_error')} ${error.message}`);
     } finally {
         setIsProcessing(false);
     }
@@ -137,8 +139,8 @@ useEffect(() => {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                     <CheckCircle className="text-green-600 w-8 h-8" />
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900">¡Reserva Creada!</h1>
-                <p className="text-gray-600 mt-2">Paga ahora para confirmar tu estancia.</p>
+                <h1 className="text-3xl font-bold text-gray-900">{t('reservation.created_title')}</h1>
+                <p className="text-gray-600 mt-2">{t('reservation.created_subtitle')}</p>
             </div>
             <PaymentCard 
                 reservationId={createdReservationId}
@@ -146,7 +148,7 @@ useEffect(() => {
                 bancolombiaNumber="517-000023-68" 
                 nequiNumber="3163563784" 
             />
-            <button onClick={() => navigate('/')} className="mt-8 text-indigo-600 font-bold hover:underline">Volver al inicio</button>
+            <button onClick={() => navigate('/')} className="mt-8 text-indigo-600 font-bold hover:underline">{t('common.back_home')}</button>
         </div>
     );
   }
@@ -155,24 +157,24 @@ useEffect(() => {
     <div className="min-h-screen bg-gray-50 pb-20 pt-24 px-4">
       <div className="max-w-6xl mx-auto">
         <button onClick={() => navigate(-1)} className="flex items-center text-gray-600 hover:text-indigo-600 font-bold mb-6">
-          <ArrowLeft size={20} className="mr-2" /> Volver atrás
+          <ArrowLeft size={20} className="mr-2" /> {t('reservation.back')}
         </button>
 
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Finalizar tu Reserva 🔒</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-8">{t('reservation.finish_title')}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             
             {/* FECHAS */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"> 
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><Calendar className="text-indigo-600"/> Fechas</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><Calendar className="text-indigo-600"/> {t('reservation.dates')}</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-indigo-50 p-3 rounded-xl">
-                   <p className="text-[10px] font-bold text-indigo-500 uppercase">Llegada</p>
+                   <p className="text-[10px] font-bold text-indigo-500 uppercase">{t('booking.check_in')}</p>
                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} selectsStart startDate={startDate} endDate={endDate} minDate={new Date()} locale="es" dateFormat="dd/MM/yyyy" className="bg-transparent font-bold text-indigo-900 outline-none w-full" />
                 </div>
                 <div className="bg-indigo-50 p-3 rounded-xl">
-                   <p className="text-[10px] font-bold text-indigo-500 uppercase">Salida</p>
+                   <p className="text-[10px] font-bold text-indigo-500 uppercase">{t('booking.check_out')}</p>
                    <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate || new Date()} locale="es" dateFormat="dd/MM/yyyy" className="bg-transparent font-bold text-indigo-900 outline-none w-full" />
                 </div>
               </div>
@@ -180,14 +182,14 @@ useEffect(() => {
 
             {/* SERVICIOS */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><Sparkles className="text-indigo-600"/> Adicionales</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><Sparkles className="text-indigo-600"/> {t('reservation.addons')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div onClick={() => setWantsCleaning(!wantsCleaning)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${wantsCleaning ? 'border-indigo-500 bg-indigo-50' : 'border-gray-100'}`}>
-                  <p className="font-bold text-sm">Limpieza</p>
+                  <p className="font-bold text-sm">{t('reservation.cleaning')}</p>
                   <p className="text-xs text-gray-500">+${CLEANING_PRICE.toLocaleString()}</p>
                 </div>
                 <div onClick={() => setWantsTaxi(!wantsTaxi)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${wantsTaxi ? 'border-indigo-500 bg-indigo-50' : 'border-gray-100'}`}>
-                  <p className="font-bold text-sm">Taxi Aeropuerto</p>
+                  <p className="font-bold text-sm">{t('reservation.airport_taxi')}</p>
                   <p className="text-xs text-gray-500">+${TAXI_PRICE.toLocaleString()}</p>
                 </div>
               </div>
@@ -195,13 +197,13 @@ useEffect(() => {
 
             {/* DATOS */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><User className="text-indigo-600"/> Tus Datos</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800"><User className="text-indigo-600"/> {t('reservation.your_data')}</h2>
               <form id="reserva-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required name="nombre" placeholder="Nombre" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
-                <input required name="apellido" placeholder="Apellido" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
-                <input required name="numeroDocumento" placeholder="Cédula" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
-                <input required type="tel" name="telefono" placeholder="WhatsApp" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
-                <input required type="email" name="email" placeholder="Email" className="md:col-span-2 p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" onChange={handleInputChange} />
+                <input required name="nombre" placeholder={t('reservation.first_name')} onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
+                <input required name="apellido" placeholder={t('reservation.last_name')} onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
+                <input required name="numeroDocumento" placeholder={t('reservation.document')} onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
+                <input required type="tel" name="telefono" placeholder={t('reservation.whatsapp')} onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" />
+                <input required type="email" name="email" placeholder={t('reservation.email')} className="md:col-span-2 p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-200 outline-none" onChange={handleInputChange} />
               </form>
             </section>
           </div>
@@ -212,18 +214,18 @@ useEffect(() => {
               <h3 className="font-bold text-lg mb-4">{propertyName}</h3>
               <div className="space-y-3 border-b pb-4 mb-4 text-sm">
                 <div className="flex justify-between text-gray-500">
-                  <span className="flex items-center gap-1"><Calendar size={14}/> {nights} noches</span>
+                  <span className="flex items-center gap-1"><Calendar size={14}/> {nights} {t('common.night')}{nights === 1 ? '' : 's'}</span>
                   <span>${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
-                  <span className="flex items-center gap-1"><Users size={14}/> {formData.huespedes} personas</span>
-                  <span className="text-green-600 font-bold">Incluido</span>
+                  <span className="flex items-center gap-1"><Users size={14}/> {formData.huespedes} {t('reservation.people')}</span>
+                  <span className="text-green-600 font-bold">{t('reservation.included')}</span>
                 </div>
-                {wantsCleaning && <div className="flex justify-between text-indigo-600"><span>Limpieza</span><span>${CLEANING_PRICE.toLocaleString()}</span></div>}
-                {wantsTaxi && <div className="flex justify-between text-indigo-600"><span>Taxi</span><span>${TAXI_PRICE.toLocaleString()}</span></div>}
+                {wantsCleaning && <div className="flex justify-between text-indigo-600"><span>{t('reservation.cleaning')}</span><span>${CLEANING_PRICE.toLocaleString()}</span></div>}
+                {wantsTaxi && <div className="flex justify-between text-indigo-600"><span>{t('reservation.taxi')}</span><span>${TAXI_PRICE.toLocaleString()}</span></div>}
               </div>
               <div className="flex justify-between font-extrabold text-xl mb-6">
-                <span>Total</span>
+                <span>{t('booking.total')}</span>
                 <span className="text-indigo-600">${total.toLocaleString()}</span>
               </div>
               <button 
@@ -232,7 +234,7 @@ useEffect(() => {
                 disabled={isProcessing}
                 className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl hover:bg-indigo-700 transition-all shadow-lg disabled:bg-gray-400"
               >
-                {isProcessing ? 'Procesando...' : 'Confirmar Reserva'}
+                {isProcessing ? t('reservation.processing') : t('reservation.confirm')}
               </button>
             </div>
           </div>

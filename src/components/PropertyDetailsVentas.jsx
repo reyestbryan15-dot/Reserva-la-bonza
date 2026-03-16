@@ -1,7 +1,9 @@
 import React from 'react';
 import { X, MapPin, CheckCircle, MessageCircle, Maximize, Bed, Bath } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const PropertyDetailsVentas = ({ propiedad, onClose, CLEAN_PHONE }) => {
+  const { t } = useLanguage();
   const handleContentClick = (e) => e.stopPropagation();
 
   // Link de WhatsApp dinámico con el nombre de la propiedad
@@ -20,7 +22,7 @@ const PropertyDetailsVentas = ({ propiedad, onClose, CLEAN_PHONE }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-2 bg-gray-50">
             {propiedad.imagenes?.map((img, index) => (
               <div key={index} className={`overflow-hidden rounded-xl ${index === 0 ? 'col-span-2 row-span-2 h-[350px] md:h-[500px]' : 'h-[170px] md:h-[245px]'}`}>
-                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-all duration-700" alt="Vista" />
+                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-all duration-700" alt={t('sales.image_alt')} />
               </div>
             ))}
           </div>
@@ -52,14 +54,14 @@ const PropertyDetailsVentas = ({ propiedad, onClose, CLEAN_PHONE }) => {
             {/* CAJA DE PRECIO Y WHATSAPP */}
             <div className="w-full lg:w-96">
               <div className="bg-gray-900 rounded-[2.5rem] p-8 text-center shadow-2xl">
-                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Precio de Venta</span>
+                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('sales.sale_price')}</span>
                 <div className="text-3xl font-black text-white mt-2 mb-8">
-                   {propiedad.precio_cop ? `$${propiedad.precio_cop.toLocaleString('es-CO')}` : "Consultar"}
+                   {propiedad.precio_cop ? `$${propiedad.precio_cop.toLocaleString('es-CO')}` : t('sales.consult')}
                 </div>
                 
                 <a href={whatsappLink} target="_blank" rel="noopener noreferrer" 
                    className="flex items-center justify-center gap-3 w-full bg-[#D4AF37] text-white py-5 rounded-2xl font-black hover:bg-white hover:text-black transition-all shadow-xl">
-                  <MessageCircle size={22} /> HABLAR CON ASESOR
+                  <MessageCircle size={22} /> {t('sales.talk_to_advisor')}
                 </a>
               </div>
             </div>

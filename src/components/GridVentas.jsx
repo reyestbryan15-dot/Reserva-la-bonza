@@ -4,8 +4,10 @@ import PropertyCard from './PropertyCard'; // Asegúrate de que PropertyCard ace
 import ElegantLoader from '../components/ui/ElegantLoader';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, SearchX, Tag } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const GridVentas = ({ limit }) => {
+  const { t } = useLanguage();
   const [propiedades, setPropiedades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,8 +62,8 @@ const GridVentas = ({ limit }) => {
   if (error) return null;
 
   const tituloPagina = filtroUrl && !limit 
-    ? `Propiedades en venta en "${filtroUrl}"` 
-    : (limit ? "Oportunidades de Inversión" : "Catálogo de Ventas");
+    ? `${t('sales.properties_for_sale_in')} "${filtroUrl}"`
+    : (limit ? t('sales.investment_opportunities') : t('sales.catalog_title'));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -74,7 +76,7 @@ const GridVentas = ({ limit }) => {
           >
             <ArrowLeft size={20} className="text-gray-400 group-hover:text-emerald-600 transition-transform group-hover:-translate-x-1" />
             <span className="font-bold text-sm text-gray-600 group-hover:text-emerald-800 uppercase tracking-wider">
-              Volver al Inicio
+              {t('common.back_home')}
             </span>
           </Link>
         </div>
@@ -90,8 +92,8 @@ const GridVentas = ({ limit }) => {
       {propiedades.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
             <SearchX size={48} className="mb-4 text-gray-300" />
-            <p className="text-xl font-medium">No hay propiedades de venta disponibles en "{filtroUrl}"</p>
-            <p className="text-sm mt-2">Prueba buscando en Cartagena o Santa Marta.</p>
+            <p className="text-xl font-medium">{t('sales.no_properties_available_in')} "{filtroUrl}"</p>
+            <p className="text-sm mt-2">{t('sales.try_searching')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -106,7 +108,7 @@ const GridVentas = ({ limit }) => {
                   : 'https://via.placeholder.com/400x300?text=Sin+Imagen',
                 precio: propiedad.precio_cop 
                   ? `$${propiedad.precio_cop.toLocaleString()} COP` 
-                  : "Consultar Precio",
+                  : t('sales.consult_price'),
                 esVenta: true // Bandera por si quieres cambiar el color de la etiqueta en la Card
               }} 
               searchQuery={location.search} 
@@ -121,7 +123,7 @@ const GridVentas = ({ limit }) => {
             to="/ventas" 
             className="inline-block bg-gradient-to-r from-emerald-600 to-emerald-800 text-white px-10 py-4 rounded-full font-bold hover:scale-105 transition shadow-xl"
           >
-            Explorar todas las ventas
+            {t('sales.explore_all')}
           </Link>
         </div>
       )}

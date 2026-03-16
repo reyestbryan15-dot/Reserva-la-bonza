@@ -1,20 +1,15 @@
-/* ========================================================================
- * SECCIÓN 1: IMPORTACIONES
- * ======================================================================== */
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../backend/supabaseClient';
-import { LogOut, Building, MapPin, Calendar, DollarSign, User, Search } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import {
+  LogOut, Building, MapPin, Calendar, DollarSign, User, Search, Loader2
+} from 'lucide-react';
 
-/* ========================================================================
- * SECCIÓN 2: LÓGICA DEL COMPONENTE
- * ======================================================================== */
 const Dashboard = ({ session }) => {
-  
-  // 2.1 Estados
+  const { t } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 2.2 Efecto: Cargar Perfil de Usuario
   useEffect(() => {
     const getProfile = async () => {
       try {
@@ -36,191 +31,170 @@ const Dashboard = ({ session }) => {
     if (session) getProfile();
   }, [session]);
 
-  // 2.3 Manejador: Cerrar Sesión
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
+    console.log("Botón presionado"); // Si esto no sale en consola, el botón no se está pulsando
+
+    // Limpieza inmediata
+    localStorage.clear();
+    sessionStorage.clear();
+
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.log("Error ignorado en signOut");
+    }
+
+    // Redirección forzada al home
+    window.location.href = '/';
   };
 
-  // 2.4 Renderizado de Carga (Spinner)
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <Loader2 className="animate-spin text-blue-600" size={40} />
       </div>
     );
   }
 
-/* ========================================================================
- * SECCIÓN 3: RENDERIZADO (JSX)
- * ======================================================================== */
+  const userName = profile?.role === 'hotel'
+    ? profile?.company_name
+    : profile?.full_name?.split(' ')[0];
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      
-      {/* --- 3.1 BARRA DE NAVEGACIÓN (NAVBAR) --- */}
+
+      {/* --- 3.1 NAVBAR --- */}
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div>
-          <h1 className="text-xl font-bold text-blue-600">Reserva la Bonanza</h1>
+          <h1 className="text-xl font-bold text-blue-600 italic">Reserva la Bonanza</h1>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-gray-800">
-                {profile?.full_name || profile?.company_name}
+              {profile?.full_name || profile?.company_name}
             </p>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-                {profile?.role === 'hotel' ? 'Socio Hotelero' : 'Viajero'}
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              {profile?.role === 'hotel' ? t('dashboard.role_hotel') : t('dashboard.role_traveler')}
             </p>
           </div>
-          
-          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+
+          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 border border-blue-200">
             <User size={20} />
           </div>
-          
-          <button 
+
+          <button
             onClick={handleLogout}
-            className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
-            title="Cerrar Sesión"
+            className="p-2 text-gray-400 hover:text-red-500 transition-all rounded-full hover:bg-red-50"
+            title={t('navbar.logout')}
           >
             <LogOut size={20} />
           </button>
         </div>
       </nav>
 
-      {/* --- 3.2 CONTENIDO PRINCIPAL --- */}
+      {/* --- 3.2 CONTENIDO --- */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        
-        {/* Saludo Personalizado */}
+
+        {/* Saludo */}
         <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Hola, <span className="text-blue-600">{profile?.role === 'hotel' ? profile?.company_name : profile?.full_name?.split(' ')[0]}</span> 👋
+          <h2 className="text-3xl font-black text-slate-800">
+            {t('dashboard.welcome_user').replace('{name}', userName)} 👋
           </h2>
-          <p className="text-gray-500 mt-1">
-            {profile?.role === 'hotel' 
-              ? 'Aquí tienes el resumen de tus propiedades hoy.' 
-              : '¿A dónde te gustaría escapar hoy?'}
+          <p className="text-gray-500 mt-1 font-medium">
+            {profile?.role === 'hotel'
+              ? t('dashboard.summary_today')
+              : t('dashboard.traveler_subtitle')}
           </p>
         </div>
 
-        {/* --- 3.3 VISTA CONDICIONAL: HOTELERO --- */}
+        {/* --- 3.3 VISTA: HOTELERO --- */}
         {profile?.role === 'hotel' && (
           <div className="space-y-6 animate-in fade-in duration-500">
-            {/* KPIs / Estadísticas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card: Ganancias */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              {/* Ganancias */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-gray-500 text-sm font-medium">Ganancias del Mes</h3>
-                  <div className="p-2 bg-green-50 text-green-600 rounded-lg"><DollarSign size={20}/></div>
+                  <h3 className="text-gray-500 text-xs font-black uppercase tracking-wider">{t('dashboard.monthly_earnings')}</h3>
+                  <div className="p-2 bg-green-50 text-green-600 rounded-xl"><DollarSign size={20} /></div>
                 </div>
-                <p className="text-2xl font-bold text-gray-800">$0.00</p>
-                <span className="text-xs text-green-600 font-medium">+0% vs mes pasado</span>
-              </div>
-              
-              {/* Card: Reservas */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-gray-500 text-sm font-medium">Reservas Activas</h3>
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Calendar size={20}/></div>
-                </div>
-                <p className="text-2xl font-bold text-gray-800">0</p>
-                <span className="text-xs text-gray-400">Sin reservas pendientes</span>
+                <p className="text-3xl font-black text-slate-900">$0.00</p>
+                <span className="text-xs text-green-600 font-bold">+0% {t('dashboard.vs_last_month')}</span>
               </div>
 
-              {/* Card: Propiedades */}
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              {/* Reservas */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-gray-500 text-sm font-medium">Mis Hoteles</h3>
-                  <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Building size={20}/></div>
+                  <h3 className="text-gray-500 text-xs font-black uppercase tracking-wider">{t('dashboard.active_bookings')}</h3>
+                  <div className="p-2 bg-blue-50 text-blue-600 rounded-xl"><Calendar size={20} /></div>
                 </div>
-                <p className="text-2xl font-bold text-gray-800">0</p>
-                <button className="text-xs text-blue-600 font-medium hover:underline mt-1">Registrar propiedad +</button>
+                <p className="text-3xl font-black text-slate-900">0</p>
+                <span className="text-xs text-gray-400 font-medium">{t('dashboard.no_pending')}</span>
+              </div>
+
+              {/* Mis Hoteles */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-gray-500 text-xs font-black uppercase tracking-wider">{t('dashboard.my_hotels')}</h3>
+                  <div className="p-2 bg-purple-50 text-purple-600 rounded-xl"><Building size={20} /></div>
+                </div>
+                <p className="text-3xl font-black text-slate-900">0</p>
+                <button className="text-xs text-blue-600 font-bold hover:underline mt-1">{t('dashboard.register_property')} +</button>
               </div>
             </div>
 
-            {/* Empty State (Sin propiedades) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            {/* Empty State */}
+            <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-12 text-center">
               <div className="max-w-md mx-auto">
-                <Building className="mx-auto text-gray-300 mb-4" size={48} />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Aún no tienes propiedades registradas</h3>
-                <p className="text-gray-500 mb-6 text-sm">Empieza a ganar dinero publicando tu primera habitación o hotel.</p>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                  Publicar mi primer hotel
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Building className="text-slate-300" size={40} />
+                </div>
+                <h3 className="text-xl font-black text-slate-800 mb-2">{t('dashboard.empty_title')}</h3>
+                <p className="text-gray-500 mb-8 text-sm leading-relaxed">{t('dashboard.empty_desc')}</p>
+                <button className="bg-slate-900 hover:bg-blue-600 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-xl hover:-translate-y-1">
+                  {t('dashboard.btn_new_property')}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* --- 3.4 VISTA CONDICIONAL: VIAJERO --- */}
+        {/* --- 3.4 VISTA: VIAJERO --- */}
         {profile?.role === 'client' && (
           <div className="space-y-8 animate-in fade-in duration-500">
-            
-            {/* Buscador */}
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+            <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-blue-900/5 border border-gray-100">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-3.5 text-gray-400" size={20}/>
-                  <input type="text" placeholder="¿A dónde quieres ir?" className="w-full pl-10 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"/>
+                  <MapPin className="absolute left-4 top-4 text-blue-500" size={20} />
+                  <input type="text" placeholder={t('dashboard.search_place')} className="input-search" />
                 </div>
                 <div className="flex-1 relative">
-                  <Calendar className="absolute left-3 top-3.5 text-gray-400" size={20}/>
-                  <input type="date" className="w-full pl-10 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-500"/>
+                  <Calendar className="absolute left-4 top-4 text-blue-500" size={20} />
+                  <input type="date" className="input-search text-gray-400" />
                 </div>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:shadow-lg">
-                  <Search size={20}/> Buscar
+                <button className="bg-blue-600 hover:bg-slate-900 text-white px-10 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+                  <Search size={20} /> {t('dashboard.btn_search')}
                 </button>
               </div>
             </div>
 
-            {/* Recomendados */}
             <div>
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Destinos Recomendados</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                {/* Card Ejemplo 1 */}
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-gray-100 group cursor-pointer hover:-translate-y-1">
-                  <div className="h-48 bg-gray-200 relative overflow-hidden">
-                     <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&q=80&w=400" alt="Hotel" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
-                     <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-800">★ 4.8</span>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-gray-800">Hotel Paradiso</h4>
-                    <p className="text-sm text-gray-500 flex items-center gap-1 mb-3"><MapPin size={14}/> Santa Marta, Colombia</p>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <span className="text-xs text-gray-400 block">Desde</span>
-                        <span className="text-lg font-bold text-blue-600">$120.000</span>
-                      </div>
-                      <button className="text-sm bg-gray-50 hover:bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg transition-colors border border-gray-200">Ver detalles</button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Ejemplo 2 */}
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-gray-100 group cursor-pointer hover:-translate-y-1">
-                  <div className="h-48 bg-gray-200 relative overflow-hidden">
-                     <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=400" alt="Hotel" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-gray-800">Resort Vista Mar</h4>
-                    <p className="text-sm text-gray-500 flex items-center gap-1 mb-3"><MapPin size={14}/> Cartagena, Colombia</p>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <span className="text-xs text-gray-400 block">Desde</span>
-                        <span className="text-lg font-bold text-blue-600">$250.000</span>
-                      </div>
-                      <button className="text-sm bg-gray-50 hover:bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg transition-colors border border-gray-200">Ver detalles</button>
-                    </div>
-                  </div>
-                </div>
-
+              <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <span className="w-8 h-1 bg-blue-600 rounded-full block"></span>
+                {t('dashboard.recommended_destinations')}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Aquí iría el map de alojamientos reales */}
               </div>
             </div>
           </div>
         )}
-
       </main>
+
+      <style>{`
+        .input-search { width: 100%; pl: 3rem; padding: 1rem 1rem 1rem 3.2rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.2rem; font-weight: 600; outline: none; transition: all 0.2s; }
+        .input-search:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+      `}</style>
     </div>
   );
 };
