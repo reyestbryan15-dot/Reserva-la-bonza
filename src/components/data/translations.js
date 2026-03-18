@@ -112,6 +112,7 @@ export const translations = {
       footer: "Reservas Turismo © 2026"
     },
     properties: {
+      price_night: "Precio por noche",
       section_title: "Propiedades Destacadas",
       section_subtitle: "Descubre opciones seleccionadas para tu próxima estadía.",
       btn_view_all: "Ver todas las propiedades",

@@ -179,10 +179,9 @@ const PropertyDetail = () => {
 
         <div className="w-full md:w-[350px] flex-shrink-0 sticky top-24 z-10">
           <BookingCard
-            pricePerNight={hotel.price || hotel.precio_noche}
-            propertyName={hotel.name || hotel.titulo}
-            propertyId={hotel.id}
-            rating={hotel.rating || 4.8}
+            property={hotel} // <--- AQUÍ LE PASAS TODO EL OBJETO CON LOS PRECIOS NUEVOS
+            rating={hotel.rating || hotel.calificacion || 5}
+            reviews={120} // O hotel.reviews si lo tienes
             checkIn={checkIn}
             checkOut={checkOut}
             numGuests={guests}
