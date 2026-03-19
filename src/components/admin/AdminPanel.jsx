@@ -18,12 +18,11 @@ const AdminPanel = ({ onLogout }) => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 1. ESTADO INICIAL CON TODAS LAS TEMPORADAS Y COSTOS
   const initialForm = {
     titulo: '', ubicacion: '', tipo: '',
     precio_temporada_baja: '',
-    precio_alta: '',
-    precio_media: '',
+    precio_temporada_alta: '',
+    precio_temporada_media: '',
     precio_semana_santa: '',
     precio_semana_uribe: '',
     costo_manilla: '',
@@ -101,7 +100,6 @@ const AdminPanel = ({ onLogout }) => {
       payload.habitaciones = formData.habitaciones;
       payload.banos = formData.banos;
     } else {
-      // Guardamos el valor "corto" (ej: 150)
       payload.precio_temporada_baja = formData.precio_temporada_baja;
       payload.precio_temporada_alta = formData.precio_temporada_alta;
       payload.precio_temporada_media = formData.precio_temporada_media;
@@ -127,18 +125,17 @@ const AdminPanel = ({ onLogout }) => {
     }
   };
 
-  // Formateador para ver Pesos Colombianos Reales
   const formatCOP = (val) => {
     const num = Number(val) || 0;
-    const isSmall = num < 10000; // Si es menor a 10.000, asumimos formato corto
+    const isSmall = num < 10000;
     const finalVal = isSmall ? num * 1000 : num;
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(finalVal);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans pb-20 md:pb-0">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans pb-24 md:pb-0">
 
-      {/* SIDEBAR */}
+      {/* SIDEBAR (Desktop) */}
       <aside className="w-72 bg-white border-r border-slate-200 flex flex-col p-6 h-screen sticky top-0 hidden md:flex">
         <div className="mb-10 text-center">
           <span className="font-black text-2xl tracking-tighter text-blue-900 italic uppercase">Admin Panel</span>
@@ -171,7 +168,7 @@ const AdminPanel = ({ onLogout }) => {
           {activeTab !== 'reservations' && (
             <button
               onClick={() => { setFormData(initialForm); setEditingId(null); setIsModalOpen(true); }}
-              className="w-full md:w-auto bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-900 transition shadow-xl"
+              className="w-full md:w-auto bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition shadow-xl"
             >
               <Plus size={20} /> {t('adminPanel.btn_add_new')}
             </button>
@@ -181,7 +178,6 @@ const AdminPanel = ({ onLogout }) => {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
         ) : activeTab === 'reservations' ? (
-          /* TABLA RESERVAS CON PRECIO REAL */
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-x-auto">
             <table className="w-full border-collapse min-w-[500px]">
               <thead className="bg-slate-50 border-b border-slate-100">
@@ -199,9 +195,7 @@ const AdminPanel = ({ onLogout }) => {
                       <p className="font-bold text-slate-700">{res.nombre_cliente}</p>
                       <p className="text-[10px] text-slate-400 uppercase font-black">{res.propiedad_titulo}</p>
                     </td>
-                    <td className="p-5 text-center font-black text-indigo-600">
-                      {formatCOP(res.precio_total)}
-                    </td>
+                    <td className="p-5 text-center font-black text-indigo-600">{formatCOP(res.precio_total)}</td>
                     <td className="p-5 text-center">
                       <span className={`px-4 py-1 rounded-full text-[10px] font-black ${res.estado === 'confirmada' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
                         {(res.estado || 'pendiente').toUpperCase()}
@@ -217,7 +211,6 @@ const AdminPanel = ({ onLogout }) => {
             </table>
           </div>
         ) : (
-          /* GRID DE CARDS CON MULTIPLICACIÓN POR 1000 */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {(activeTab === 'properties' ? properties : sales).map(item => (
               <div key={item.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
@@ -228,9 +221,7 @@ const AdminPanel = ({ onLogout }) => {
                   <h4 className="font-black text-lg text-slate-800 truncate">{item.titulo}</h4>
                   <p className="text-xs text-slate-400 flex items-center gap-1 mb-4"><MapPin size={12} /> {item.ubicacion}</p>
                   <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-                    <p className="font-black text-blue-900 text-md">
-                      {formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}
-                    </p>
+                    <p className="font-black text-blue-900 text-md">{formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}</p>
                     <div className="flex gap-2">
                       <button onClick={() => {
                         setFormData({ ...item, imagenes: item.imagenes || item.galeria || [], descripcion: item.descripcion || '' });
@@ -247,9 +238,25 @@ const AdminPanel = ({ onLogout }) => {
         )}
       </main>
 
-      {/* MODAL DE EDICIÓN CON RANGOS DE PRECIO */}
+      {/* BOTONES MENÚ MÓVIL (CORREGIDO) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-3 flex justify-around items-center z-[100] shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+        <button onClick={() => setActiveTab('properties')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'properties' ? 'text-blue-600 scale-110' : 'text-slate-400'}`}>
+          <LayoutGrid size={24} /> <span className="text-[10px] font-black uppercase">Rentals</span>
+        </button>
+        <button onClick={() => setActiveTab('sales')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'sales' ? 'text-blue-600 scale-110' : 'text-slate-400'}`}>
+          <Tag size={24} /> <span className="text-[10px] font-black uppercase">Sales</span>
+        </button>
+        <button onClick={() => setActiveTab('reservations')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'reservations' ? 'text-blue-600 scale-110' : 'text-slate-400'}`}>
+          <Bell size={24} /> <span className="text-[10px] font-black uppercase">Inbox</span>
+        </button>
+        <button onClick={handleLogout} className="flex flex-col items-center gap-1 text-red-400">
+          <LogOut size={24} /> <span className="text-[10px] font-black uppercase">Exit</span>
+        </button>
+      </nav>
+
+      {/* MODAL (SIN CAMBIOS) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-2 md:p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] flex items-center justify-center p-2 md:p-4">
           <form onSubmit={saveEntry} className="bg-white p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] w-full max-w-4xl shadow-2xl max-h-[95vh] overflow-y-auto relative">
             <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-red-50 text-slate-500 rounded-full transition"><X size={20} /></button>
 
@@ -258,7 +265,6 @@ const AdminPanel = ({ onLogout }) => {
             </h3>
 
             <div className="space-y-6">
-              {/* GALERÍA */}
               <div>
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-3 ml-1">Imágenes de la propiedad</label>
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
@@ -275,41 +281,44 @@ const AdminPanel = ({ onLogout }) => {
                 </div>
               </div>
 
-              {/* FORMULARIO DINÁMICO */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <input required className="input-admin" placeholder="Título" value={formData.titulo || ''} onChange={e => setFormData({ ...formData, titulo: e.target.value })} />
                 <input required className="input-admin" placeholder="Ubicación" value={formData.ubicacion || ''} onChange={e => setFormData({ ...formData, ubicacion: e.target.value })} />
 
                 {activeTab === 'sales' ? (
                   <>
-                    <input type="number" className="input-admin" placeholder="Precio COP (Ej: 450000000)" value={formData.precio_cop || ''} onChange={e => setFormData({ ...formData, precio_cop: e.target.value })} />
+                    <input type="number" className="input-admin" placeholder="Precio COP" value={formData.precio_cop || ''} onChange={e => setFormData({ ...formData, precio_cop: e.target.value })} />
                     <input type="number" className="input-admin" placeholder="Precio USD" value={formData.precio_usd || ''} onChange={e => setFormData({ ...formData, precio_usd: e.target.value })} />
                   </>
                 ) : (
                   <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-blue-600 uppercase ml-1">Precio Baja (Ej: 150)</label>
-                      <input type="number" className="input-admin" placeholder="150" value={formData.precio_temporada_baja || ''} onChange={e => setFormData({ ...formData, precio_temporada_baja: e.target.value })} />
+                      <label className="text-[9px] font-bold text-blue-600 uppercase ml-1">Baja (Ej: 150)</label>
+                      <input type="number" className="input-admin" value={formData.precio_temporada_baja || ''} onChange={e => setFormData({ ...formData, precio_temporada_baja: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-red-500 uppercase ml-1">Precio Alta (Dic/Ene)</label>
-                      <input type="number" className="input-admin" placeholder="250" value={formData.precio_temporada_alta || ''} onChange={e => setFormData({ ...formData, precio_temporada_alta: e.target.value })} />
+                      <label className="text-[9px] font-bold text-red-500 uppercase ml-1">Alta</label>
+                      <input type="number" className="input-admin" value={formData.precio_temporada_alta || ''} onChange={e => setFormData({ ...formData, precio_temporada_alta: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-orange-500 uppercase ml-1">Semana Santa</label>
-                      <input type="number" className="input-admin" placeholder="350" value={formData.precio_semana_santa || ''} onChange={e => setFormData({ ...formData, precio_semana_santa: e.target.value })} />
+                      <label className="text-[9px] font-bold text-orange-500 uppercase ml-1">Media</label>
+                      <input type="number" className="input-admin" value={formData.precio_temporada_media || ''} onChange={e => setFormData({ ...formData, precio_temporada_media: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-indigo-500 uppercase ml-1">Semana Uribe</label>
-                      <input type="number" className="input-admin" placeholder="200" value={formData.precio_semana_uribe || ''} onChange={e => setFormData({ ...formData, precio_semana_uribe: e.target.value })} />
+                      <label className="text-[9px] font-bold text-purple-600 uppercase ml-1">Santa</label>
+                      <input type="number" className="input-admin" value={formData.precio_semana_santa || ''} onChange={e => setFormData({ ...formData, precio_semana_santa: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-green-600 uppercase ml-1">Costo Manilla</label>
-                      <input type="number" className="input-admin" placeholder="8" value={formData.costo_manilla || ''} onChange={e => setFormData({ ...formData, costo_manilla: e.target.value })} />
+                      <label className="text-[9px] font-bold text-indigo-500 uppercase ml-1">Uribe</label>
+                      <input type="number" className="input-admin" value={formData.precio_semana_uribe || ''} onChange={e => setFormData({ ...formData, precio_semana_uribe: e.target.value })} />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-green-700 uppercase ml-1">Costo Aseo (Final)</label>
-                      <input type="number" className="input-admin" placeholder="50" value={formData.costo_aseo || ''} onChange={e => setFormData({ ...formData, costo_aseo: e.target.value })} />
+                      <label className="text-[9px] font-bold text-green-600 uppercase ml-1">Manilla</label>
+                      <input type="number" className="input-admin" value={formData.costo_manilla || ''} onChange={e => setFormData({ ...formData, costo_manilla: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-green-700 uppercase ml-1">Aseo</label>
+                      <input type="number" className="input-admin" value={formData.costo_aseo || ''} onChange={e => setFormData({ ...formData, costo_aseo: e.target.value })} />
                     </div>
                   </div>
                 )}
