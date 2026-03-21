@@ -38,7 +38,7 @@ const ReservationPage = () => {
   const propertyId = searchParams.get('propertyId');
   const propertyName = searchParams.get('propertyName') || "Propiedad";
 
-  // 1. CARGAR DATOS COMPLETOS DE LA PROPIEDAD (PRECIOS DE TODAS LAS TEMPORADAS)
+  // 1. CARGAR DATOS COMPLETOS DE LA PROPIEDAD
   useEffect(() => {
     const fetchPropertyInfo = async () => {
       if (!propertyId || propertyId === "sin-id") return;
@@ -51,7 +51,6 @@ const ReservationPage = () => {
 
       if (data && !error) {
         setPropertyData(data);
-        // Si el aseo en la BD es < 1000 (ej: 50), lo volvemos 50.000. Si ya es 50000, se queda igual.
         const valorAseo = data.costo_aseo < 1000 ? data.costo_aseo * 1000 : data.costo_aseo;
         setExtraPrices(prev => ({ ...prev, limpieza: valorAseo }));
       }
@@ -70,52 +69,36 @@ const ReservationPage = () => {
     if (guestsUrl) setFormData(prev => ({ ...prev, huespedes: parseInt(guestsUrl) || 1 }));
   }, [searchParams]);
 
-  // 3. EL "CEREBRO" DE TEMPORADAS (Sincronizado con BookingCard)
+  // 3. LÓGICA DE TEMPORADAS
   const getSeasonPrice = (date, data) => {
     if (!date || !data) return 0;
-
     const d = new Date(date);
     const dateStr = format(d, 'yyyy-MM-dd');
     const month = d.getMonth() + 1;
     const day = d.getDate();
 
-    // TEMPORADA ALTA (Diciembre 15 - Enero 15)
     if ((month === 12 && day >= 15) || (month === 1 && day <= 15)) {
-      const p = data.precio_alta || data.precio_alta || data.precio_temporada_baja;
-      return Number(p) * 1000;
+      return Number(data.precio_alta || data.precio_temporada_baja) * 1000;
     }
-
-    // SEMANA SANTA 2026
     if (dateStr >= '2026-03-29' && dateStr <= '2026-04-05') {
-      const p = data.precio_semana_santa || data.precio_temporada_alta;
-      return Number(p) * 1000;
+      return Number(data.precio_semana_santa || data.precio_temporada_alta) * 1000;
     }
-
-    // SEMANA URIBE (Octubre 5-12)
     if (month === 10 && day >= 5 && day <= 12) {
-      const p = data.precio_semana_uribe || data.precio_temporada_media;
-      return Number(p) * 1000;
+      return Number(data.precio_semana_uribe || data.precio_temporada_media) * 1000;
     }
-
-    // FESTIVOS
     const festivos = ['2026-03-23', '2026-05-01', '2026-05-18', '2026-06-08', '2026-06-15', '2026-06-29', '2026-07-20', '2026-08-07', '2026-08-17'];
     if (festivos.includes(dateStr)) {
-      const p = data.precio_media || data.precio_festivo || data.precio_temporada_baja;
-      return Number(p) * 1000;
+      return Number(data.precio_media || data.precio_festivo || data.precio_temporada_baja) * 1000;
     }
-
-    // TEMPORADA BAJA (Por defecto)
-    const pBase = data.precio_temporada_baja || data.precio_baja || 0;
-    return Number(pBase) * 1000;
+    return Number(data.precio_temporada_baja || 0) * 1000;
   };
 
-  // 4. RECÁLCULO DINÁMICO CUANDO CAMBIAN LAS FECHAS O CARGAN LOS DATOS
+  // 4. RECÁLCULO DE SUBTOTAL
   useEffect(() => {
     if (startDate && endDate && propertyData) {
       let totalAcumulado = 0;
       let tempDate = new Date(startDate);
       const limitDate = new Date(endDate);
-
       while (tempDate < limitDate) {
         totalAcumulado += getSeasonPrice(tempDate, propertyData);
         tempDate.setDate(tempDate.getDate() + 1);
@@ -124,10 +107,10 @@ const ReservationPage = () => {
     }
   }, [startDate, endDate, propertyData]);
 
-  // Totales finales
+  // Totales finales (Lógica de Taxi comentada)
   const nights = startDate && endDate ? Math.max(0, differenceInDays(endDate, startDate)) : 0;
   const costManillas = ((propertyData?.costo_manilla || 0) * 1000) * formData.huespedes;
-  const totalFinal = currentSubtotal + costManillas + (wantsCleaning ? extraPrices.limpieza : 0) + (wantsTaxi ? extraPrices.taxi : 0);
+  const totalFinal = currentSubtotal + costManillas + (wantsCleaning ? extraPrices.limpieza : 0) /* + (wantsTaxi ? extraPrices.taxi : 0) */;
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -186,7 +169,6 @@ const ReservationPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* CALENDARIO DE AJUSTE FINAL */}
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Calendar className="text-indigo-600" /> Fechas de Estancia</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -201,7 +183,6 @@ const ReservationPage = () => {
               </div>
             </section>
 
-            {/* SERVICIOS ADICIONALES */}
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Sparkles className="text-indigo-600" /> Servicios Adicionales</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -209,14 +190,16 @@ const ReservationPage = () => {
                   <p className="font-bold">Servicio de Aseo</p>
                   <p className="text-xs text-gray-500">+{formatCOP(extraPrices.limpieza)}</p>
                 </div>
+                
+                {/* SERVICIO DE TAXI COMENTADO PARA EL FUTURO
                 <div onClick={() => setWantsTaxi(!wantsTaxi)} className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${wantsTaxi ? 'border-indigo-600 bg-indigo-50' : 'border-gray-100 hover:border-indigo-200'}`}>
                   <p className="font-bold">Taxi al Aeropuerto</p>
                   <p className="text-xs text-gray-500">+{formatCOP(extraPrices.taxi)}</p>
                 </div>
+                */}
               </div>
             </section>
 
-            {/* FORMULARIO DE CLIENTE */}
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><User className="text-indigo-600" /> Información del Huésped</h2>
               <form id="reserva-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -229,7 +212,6 @@ const ReservationPage = () => {
             </section>
           </div>
 
-          {/* RESUMEN DE PAGO FINAL */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl border p-6 sticky top-28">
               <h3 className="font-bold text-lg mb-4 text-gray-800 border-b pb-2">{propertyName}</h3>
@@ -243,7 +225,10 @@ const ReservationPage = () => {
                   <span className="font-bold text-gray-900">{formatCOP(costManillas)}</span>
                 </div>
                 {wantsCleaning && <div className="flex justify-between text-indigo-600 font-bold"><span>Aseo</span><span>+{formatCOP(extraPrices.limpieza)}</span></div>}
+                
+                {/* DESGLOSE DE TAXI COMENTADO EN EL RESUMEN
                 {wantsTaxi && <div className="flex justify-between text-indigo-600 font-bold"><span>Taxi</span><span>+{formatCOP(extraPrices.taxi)}</span></div>}
+                */}
               </div>
               <div className="flex justify-between font-extrabold text-2xl mb-6 text-indigo-900">
                 <span>Total</span>

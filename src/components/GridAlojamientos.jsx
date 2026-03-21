@@ -3,68 +3,85 @@ import { supabase } from '../../backend/supabaseClient';
 import PropertyCard from './PropertyCard';
 import ElegantLoader from '../components/ui/ElegantLoader';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, SearchX } from 'lucide-react'; // Agregué SearchX para cuando no hay resultados
+import { ArrowLeft, SearchX } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const GridAlojamientos = ({ limit }) => {
   const { t } = useLanguage();
-  const [alojamientos, setAlojamientos] = useState([]);
+  const [properties, setProperties] = useState([]); // Cambié el nombre a properties porque ahora incluye ventas
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // CORRECCIÓN AQUÍ: Leemos 'busqueda' O 'destino' para que coincida con el SearchEngine
-  const filtroUrl = searchParams.get('busqueda') || searchParams.get('destino'); 
+  // Leemos los parámetros del SearchEngine
+  const filtroDestino = searchParams.get('destino'); 
+  const filtroTipo = searchParams.get('tipo') || 'todo'; // alquiler, venta o todo
+  const filtroGuests = searchParams.get('guests');
 
   useEffect(() => {
-    const fetchAlojamientos = async () => {
-      try {
-        setLoading(true);
-        // Traemos los datos de Supabase
-        let query = supabase.from('alojamientos').select('*');
+const fetchAllData = async () => {
+  try {
+    setLoading(true);
+    let finalResults = [];
+    const guestsNum = parseInt(filtroGuests) || 1;
 
-        const { data, error } = await query;
-        if (error) throw error;
+    // --- 1. CONSULTA DE ALQUILERES ---
+    if (filtroTipo === 'todo' || filtroTipo === 'alquiler') {
+      let query = supabase.from('alojamientos').select('*');
+      
+      // Filtro de ubicación flexible (busca la palabra dentro de la dirección larga)
+      if (filtroDestino) query = query.ilike('ubicacion', `%${filtroDestino}%`);
 
-        let resultados = data;
+      // CORRECCIÓN: Filtramos por max_adultos (que es la columna real en tu DB)
+      if (filtroGuests) query = query.gte('max_adultos', guestsNum);
 
-        // === FILTRADO INTELIGENTE ===
-        if (filtroUrl) {
-          const termino = filtroUrl.toLowerCase().trim();
-          
-          resultados = data.filter((item) => {
-            const ubicacion = (item.ubicacion || "").toLowerCase();
-            const titulo = (item.titulo || "").toLowerCase();
-            // Filtra si el término está en la ubicación O en el título
-            return ubicacion.includes(termino) || titulo.includes(termino);
-          });
-        }
-
-        // Si estamos en el Home (limit), solo mostramos los primeros N
-        if (limit) {
-          resultados = resultados.slice(0, limit);
-        }
-
-        setAlojamientos(resultados);
-      } catch (error) {
-        console.error("Error cargando alojamientos:", error.message);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+      const { data: rentals, error: rentError } = await query;
+      if (rentError) throw rentError;
+      if (rentals) {
+        finalResults = [...finalResults, ...rentals.map(item => ({ ...item, isVenta: false }))];
       }
-    };
+    }
 
-    fetchAlojamientos();
-  }, [limit, filtroUrl]); // Se recarga cuando cambia el destino en la URL
+    // --- 2. CONSULTA DE VENTAS ---
+    if (filtroTipo === 'todo' || filtroTipo === 'venta') {
+      let query = supabase.from('ventas_propiedades').select('*');
+      
+      if (filtroDestino) query = query.ilike('ubicacion', `%${filtroDestino}%`);
+      
+      // En ventas solemos usar 'habitaciones', si falla cámbiala por la columna de ventas
+      if (filtroGuests) query = query.gte('habitaciones', guestsNum);
+
+      const { data: sales, error: saleError } = await query;
+      if (saleError) throw saleError;
+      if (sales) {
+        finalResults = [...finalResults, ...sales.map(item => ({ ...item, isVenta: true }))];
+      }
+    }
+
+    // Aplicar límite si existe (para el Home)
+    if (limit) finalResults = finalResults.slice(0, limit);
+
+    setProperties(finalResults);
+  } catch (error) {
+    console.error("Error cargando propiedades:", error.message);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+    fetchAllData();
+  }, [limit, filtroDestino, filtroTipo, filtroGuests]); // Se activa al cambiar cualquier filtro
 
   if (loading) return <ElegantLoader />;
   if (error) return null;
 
-  // Título dinámico corregido
-  const tituloPagina = filtroUrl && !limit 
-    ? `${t('lodging.results_for')} "${filtroUrl}"`
-    : (limit ? t('lodging.featured') : t('lodging.all'));
+  // Título dinámico
+  let tituloPagina = limit ? t('lodging.featured') : t('lodging.all');
+  if (filtroDestino && !limit) tituloPagina = `${t('lodging.results_for')} "${filtroDestino}"`;
+  if (filtroTipo === 'venta' && !limit) tituloPagina = "Propiedades en Venta";
+  if (filtroTipo === 'alquiler' && !limit) tituloPagina = "Alojamientos Turísticos";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -87,19 +104,18 @@ const GridAlojamientos = ({ limit }) => {
         {tituloPagina}
       </h2>
       
-      {alojamientos.length === 0 ? (
+      {properties.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-200">
             <SearchX size={48} className="mb-4 text-gray-300" />
-            <p className="text-xl font-medium">{t('lodging.no_results_in')} "{filtroUrl}"</p>
-            <p className="text-sm mt-2">{t('lodging.try_another')}</p>
+            <p className="text-xl font-medium">No encontramos resultados para tu búsqueda</p>
+            <p className="text-sm mt-2">Intenta cambiando los filtros de ubicación o capacidad.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {alojamientos.map((hotel) => (
+          {properties.map((item) => (
             <PropertyCard 
-              key={hotel.id} 
-              data={hotel} 
-              // Pasamos los parámetros de búsqueda para que no se pierdan al entrar al detalle
+              key={`${item.isVenta ? 'sale' : 'rent'}-${item.id}`} 
+              data={item} 
               searchQuery={location.search} 
             />
           ))}

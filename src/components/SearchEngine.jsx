@@ -1,20 +1,54 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, MapPin, User, Minus, Plus, Tag } from 'lucide-react';
+import { Search, MapPin, User, Minus, Plus, Tag, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../../backend/supabaseClient'; // Asegúrate de que la ruta sea correcta
 
 const SearchEngine = () => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
   // ESTADOS DE FILTRO
   const [location, setLocation] = useState(''); 
-  const [operation, setOperation] = useState(''); // Alquiler o Venta
+  const [operation, setOperation] = useState(''); // '' (Todo), 'alquiler' o 'venta'
   const [guests, setGuests] = useState(1);
   const [showGuestMenu, setShowGuestMenu] = useState(false);
+  const [dynamicLocations, setDynamicLocations] = useState([]);
+  const [loadingLocs, setLoadingLocs] = useState(true);
   const guestMenuRef = useRef(null);
 
-  // Cerrar menú al hacer clic fuera
+  // 1. CARGAR UBICACIONES DINÁMICAS DESDE LA BASE DE DATOS
+  useEffect(() => {
+const fetchLocations = async () => {
+  try {
+    setLoadingLocs(true);
+    const { data: rentLocs } = await supabase.from('alojamientos').select('ubicacion');
+    const { data: saleLocs } = await supabase.from('ventas_propiedades').select('ubicacion');
+    
+    const allLocs = [...(rentLocs || []), ...(saleLocs || [])]
+      .map(item => {
+        if (!item.ubicacion) return null;
+        // LIMPIEZA: Toma lo que esté antes de la primera coma, guion o barra
+        // Ejemplo: "Cartagena - Apto 206" -> "Cartagena"
+        const mainLocation = item.ubicacion.split(/[-,/]/)[0].trim();
+        return mainLocation;
+      })
+      // Filtra duplicados y valores vacíos
+      .filter((value, index, self) => value && self.indexOf(value) === index)
+      .sort();
+    
+    setDynamicLocations(allLocs);
+  } catch (error) {
+    console.error("Error cargando ubicaciones:", error);
+  } finally {
+    setLoadingLocs(false);
+  }
+};
+
+    fetchLocations();
+  }, []);
+
+  // Cerrar menú de huéspedes al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (guestMenuRef.current && !guestMenuRef.current.contains(e.target)) {
@@ -29,10 +63,19 @@ const SearchEngine = () => {
     if(e) e.preventDefault();
     const params = new URLSearchParams();
     
+    // Si location está vacío, el filtro lo ignorará y mostrará todo
     if (location) params.append('destino', location);
-    if (operation) params.append('tipo', operation);
+    
+    // Si operation es vacío, enviamos "todo" o simplemente no lo filtramos en el destino
+    if (operation) {
+        params.append('tipo', operation);
+    } else {
+        params.append('tipo', 'todo');
+    }
+
     params.append('guests', guests);
 
+    // Navegamos a la página de resultados con los filtros
     navigate(`/propiedades?${params.toString()}`);
   };
 
@@ -40,30 +83,35 @@ const SearchEngine = () => {
     <div className="w-full max-w-5xl mx-auto relative z-40 -mt-10 px-4">
       <div className="bg-white rounded-[2.5rem] md:rounded-full shadow-2xl p-2 flex flex-col md:flex-row items-center border border-gray-100">
         
-        {/* 1. FILTRO: UBICACIÓN */}
+        {/* 1. FILTRO: UBICACIÓN DINÁMICA */}
         <div className="relative w-full md:w-[33%] px-6 py-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 rounded-t-[2rem] md:rounded-l-full md:rounded-r-none group transition-colors">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">{t('search.area_label')}</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">
+            {t('search.area_label')}
+          </label>
           <div className="flex items-center">
-            <MapPin size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
+            {loadingLocs ? (
+              <Loader2 size={20} className="text-blue-500 animate-spin mr-3" />
+            ) : (
+              <MapPin size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
+            )}
             <select 
               className="w-full text-sm md:text-base font-bold text-gray-700 outline-none bg-transparent cursor-pointer appearance-none"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             >
-              <option value="">{t('search.where_placeholder')}</option>
-              <option value="Rodadero">El Rodadero</option>
-              <option value="Gaira">Gaira</option>
-              <option value="Bello Horizonte">Bello Horizonte</option>
-              <option value="Pozos Colorados">Pozos Colorados</option>
-              <option value="Centro Historico">Centro Histórico</option>
-              <option value="Taganga">Taganga</option>
+              <option value="">{loadingLocs ? 'Cargando zonas...' : t('search.where_placeholder')}</option>
+              {dynamicLocations.map((loc, index) => (
+                <option key={index} value={loc}>{loc}</option>
+              ))}
             </select>
           </div>
         </div>
 
-        {/* 2. FILTRO: TIPO DE OPERACIÓN */}
+        {/* 2. FILTRO: TIPO DE OPERACIÓN (ALQUILER / VENTA / TODO) */}
         <div className="relative w-full md:w-[33%] px-6 py-4 border-b md:border-b-0 md:border-r border-gray-100 hover:bg-gray-50 group transition-colors">
-          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">{t('search.category')}</label>
+          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-left">
+            {t('search.category')}
+          </label>
           <div className="flex items-center">
             <Tag size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
             <select 
@@ -71,21 +119,23 @@ const SearchEngine = () => {
               value={operation}
               onChange={(e) => setOperation(e.target.value)}
             >
-              <option value="">{t('search.rent_or_sale')}</option>
+              <option value="">{t('search.rent_or_sale')} (Todo)</option>
               <option value="alquiler">{t('search.rent_only')}</option>
               <option value="venta">{t('search.for_sale')}</option>
             </select>
           </div>
         </div>
 
-        {/* 3. FILTRO: CAPACIDAD */}
+        {/* 3. FILTRO: CAPACIDAD MÍNIMA */}
         <div 
           ref={guestMenuRef}
           className="relative w-full md:w-[34%] pl-6 pr-2 py-2 flex items-center justify-between hover:bg-gray-50 rounded-b-[2rem] md:rounded-r-full md:rounded-l-none cursor-pointer group"
           onClick={() => setShowGuestMenu(!showGuestMenu)}
         >
           <div className="text-left">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('search.min_capacity')}</label>
+            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+              {t('search.min_capacity')}
+            </label>
             <div className="flex items-center">
               <User size={20} className="text-gray-400 mr-3 group-hover:text-blue-600 shrink-0" />
               <span className="text-sm md:text-base font-bold text-gray-700">
@@ -95,7 +145,10 @@ const SearchEngine = () => {
           </div>
           
           <button 
-            onClick={handleSearch} 
+            onClick={(e) => {
+                e.stopPropagation(); // Evitar que abra el menú de huéspedes al clickear el botón
+                handleSearch();
+            }} 
             className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all active:scale-95 ml-2"
           >
             <Search size={22} strokeWidth={3} />
