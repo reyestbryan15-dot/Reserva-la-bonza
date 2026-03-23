@@ -3,7 +3,7 @@ import { supabase } from '../../../backend/supabaseClient';
 import { useLanguage } from '../../context/LanguageContext';
 import {
   LogOut, Plus, Edit, MapPin, Trash2, LayoutGrid, Tag, Bell,
-  X, Upload, Loader2, CheckCircle, Video, Calendar, User, Mail, CreditCard
+  X, Upload, Loader2, CheckCircle, Video, Calendar, User, Mail, CreditCard, Play
 } from 'lucide-react';
 
 const AdminPanel = ({ onLogout }) => {
@@ -30,6 +30,16 @@ const AdminPanel = ({ onLogout }) => {
   };
 
   const [formData, setFormData] = useState(initialForm);
+
+  // FUNCIÓN PARA CONVERTIR LINK DE YOUTUBE A EMBED
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11)
+      ? `https://www.youtube.com/embed/${match[2]}`
+      : null;
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -97,8 +107,8 @@ const AdminPanel = ({ onLogout }) => {
       payload.banos = formData.banos;
     } else {
       payload.precio_temporada_baja = formData.precio_temporada_baja;
-      payload.precio_temporada_alta = formData.precio_temporada_alta;
-      payload.precio_temporada_media = formData.precio_temporada_media;
+      payload.precio_alta = formData.precio_alta;
+      payload.precio_media = formData.precio_media;
       payload.precio_semana_santa = formData.precio_semana_santa;
       payload.precio_semana_uribe = formData.precio_semana_uribe;
       payload.costo_manilla = formData.costo_manilla;
@@ -168,7 +178,6 @@ const AdminPanel = ({ onLogout }) => {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
         ) : activeTab === 'reservations' ? (
-          /* --- TABLA DE RESERVAS MEJORADA --- */
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse min-w-[800px]">
@@ -196,7 +205,7 @@ const AdminPanel = ({ onLogout }) => {
                       <td className="p-5 text-center font-black text-indigo-600">{formatCOP(res.precio_total)}</td>
                       <td className="p-5 text-center">
                         <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${res.estado === 'confirmada' ? 'bg-green-100 text-green-600' :
-                            res.estado === 'cancelada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
+                          res.estado === 'cancelada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
                           }`}>
                           {res.estado || 'pendiente'}
                         </span>
@@ -217,42 +226,58 @@ const AdminPanel = ({ onLogout }) => {
             </div>
           </div>
         ) : (
-          /* --- GRILLA DE PROPIEDADES --- */
+          /* --- GRILLA DE PROPIEDADES MEJORADA --- */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(activeTab === 'properties' ? properties : sales).map(item => (
-              <div key={item.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-                <div className="h-48 bg-slate-100 relative overflow-hidden">
-                  <img src={(item.imagenes?.[0] || item.galeria?.[0]) || 'https://placehold.co/600x400?text=Sin+Imagen'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
-                </div>
-                <div className="p-5">
-                  <h4 className="font-black text-lg text-slate-800 truncate">{item.titulo}</h4>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mb-4 italic"><MapPin size={12} /> {item.ubicacion}</p>
-                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-                    <p className="font-black text-blue-900 text-sm">
-                      {formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}
-                    </p>
-                    <div className="flex gap-2">
-                      <button onClick={() => {
-                        setFormData({
-                          ...item,
-                          imagenes: item.imagenes || item.galeria || [],
-                          video_url: item.video_url || '',
-                          descripcion: item.descripcion || ''
-                        });
-                        setEditingId(item.id);
-                        setIsModalOpen(true);
-                      }} className="p-2 bg-white text-blue-600 rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition"><Edit size={16} /></button>
-                      <button onClick={async () => { if (window.confirm("¿Eliminar propiedad permanentemente?")) { await supabase.from(activeTab === 'sales' ? 'ventas_propiedades' : 'alojamientos').delete().eq('id', item.id); fetchData(); } }} className="p-2 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition"><Trash2 size={16} /></button>
+            {(activeTab === 'properties' ? properties : sales).map(item => {
+              const currentImgs = item.imagenes || item.galeria || [];
+              return (
+                <div key={item.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+                  <div className="h-48 bg-slate-100 relative overflow-hidden flex items-center justify-center">
+                    {currentImgs.length > 0 ? (
+                      <img src={currentImgs[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                    ) : (
+                      <div className="flex flex-col items-center text-slate-300">
+                        <LayoutGrid size={48} strokeWidth={1} />
+                        <span className="text-[10px] font-black uppercase mt-2 tracking-widest">Sin imagen</span>
+                      </div>
+                    )}
+                    {/* INDICADOR DE VIDEO */}
+                    {item.video_url && (
+                      <div className="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-full shadow-xl">
+                        <Video size={14} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h4 className="font-black text-lg text-slate-800 truncate">{item.titulo}</h4>
+                    <p className="text-xs text-slate-400 flex items-center gap-1 mb-4 italic"><MapPin size={12} /> {item.ubicacion}</p>
+                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
+                      <p className="font-black text-blue-900 text-sm">
+                        {formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}
+                      </p>
+                      <div className="flex gap-2">
+                        <button onClick={() => {
+                          setFormData({
+                            ...item,
+                            imagenes: item.imagenes || item.galeria || [],
+                            video_url: item.video_url || '',
+                            descripcion: item.descripcion || ''
+                          });
+                          setEditingId(item.id);
+                          setIsModalOpen(true);
+                        }} className="p-2 bg-white text-blue-600 rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition"><Edit size={16} /></button>
+                        <button onClick={async () => { if (window.confirm("¿Eliminar propiedad permanentemente?")) { await supabase.from(activeTab === 'sales' ? 'ventas_propiedades' : 'alojamientos').delete().eq('id', item.id); fetchData(); } }} className="p-2 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition"><Trash2 size={16} /></button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
 
-      {/* --- MENU MÓVIL (CORREGIDO PARA FUNCIONAR) --- */}
+      {/* --- MENU MÓVIL --- */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-3 flex justify-around items-center z-[100] shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         <button onClick={() => setActiveTab('properties')} className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === 'properties' ? 'text-blue-600' : 'text-slate-400'}`}>
           <LayoutGrid size={22} /> <span className="text-[9px] font-black uppercase tracking-tighter">Alquiler</span>
@@ -296,19 +321,33 @@ const AdminPanel = ({ onLogout }) => {
                 </div>
               </div>
 
-              {/* URL Video */}
+              {/* URL Video + PREVIEW */}
               <div className="bg-slate-50 p-6 rounded-3xl border border-blue-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Video size={18} className="text-blue-600" />
-                  <label className="text-[10px] font-black uppercase text-slate-500">Link de Recorrido Virtual (YouTube)</label>
+                  <label className="text-[10px] font-black uppercase text-slate-500">Video Recorrido (YouTube Link)</label>
                 </div>
                 <input
                   type="url"
-                  className="input-admin"
+                  className="input-admin mb-4"
                   placeholder="https://www.youtube.com/watch?v=..."
                   value={formData.video_url || ''}
                   onChange={e => setFormData({ ...formData, video_url: e.target.value })}
                 />
+
+                {/* PREVIEW DEL VIDEO DENTRO DEL MODAL */}
+                {getEmbedUrl(formData.video_url) && (
+                  <div className="rounded-2xl overflow-hidden aspect-video shadow-lg bg-black">
+                    <iframe
+                      className="w-full h-full"
+                      src={getEmbedUrl(formData.video_url)}
+                      title="Preview"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                )}
               </div>
 
               {/* Inputs Generales */}
@@ -329,7 +368,7 @@ const AdminPanel = ({ onLogout }) => {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[9px] font-black uppercase text-red-500 ml-1">T. Alta</label>
-                      <input type="number" className="input-admin" value={formData.precio_temporada_alta || ''} onChange={e => setFormData({ ...formData, precio_temporada_alta: e.target.value })} />
+                      <input type="number" className="input-admin" value={formData.precio_alta || ''} onChange={e => setFormData({ ...formData, precio_alta: e.target.value })} />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[9px] font-black uppercase text-green-600 ml-1">Aseo</label>
