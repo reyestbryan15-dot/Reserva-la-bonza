@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Star, ArrowRight, Heart, Maximize2 } from 'lucide-react';
+import { MapPin, Star, ArrowRight, Maximize2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import ImageModal from './ImageModal';
@@ -11,47 +11,61 @@ const PropertyCard = ({ data }) => {
 
   if (!data) return null;
 
-  // Extraemos todas las posibles columnas de ambas tablas
   const {
-    id,
-    titulo,
-    nombre, // Ventas a veces usa nombre
-    tipo,
-    ubicacion,
-    precio_noche,
-    precio_cop, // Ventas
-    calificacion,
-    imagen_url, // Alquiler
-    galeria,    // Alquiler (Array)
-    imagenes,   // Ventas (Array)
-    imagen_principal, // Ventas (String)
-    isVenta     // Marcador que pusimos en GridAlojamientos
+    id, titulo, nombre, tipo, ubicacion, calificacion,
+    precio_noche, precio_temporada_baja, precio_alta, precio_semana_santa, // Alquiler
+    precio_cop, // Ventas (No tocar)
+    galeria, imagen_url, imagenes, imagen_principal, // Imágenes
+    isVenta
   } = data;
 
-  // --- LÓGICA DE IMAGEN UNIFICADA ---
+  // ==========================================
+  // 1. LÓGICA DE PRECIOS DINÁMICOS (ALQUILER)
+  // ==========================================
+  const calcularPrecioAlquilerHoy = () => {
+    const hoy = new Date();
+    const mes = hoy.getMonth() + 1;
+    const dia = hoy.getDate();
+
+    // --- TEMPORADA SEMANA SANTA 2026 (Del 27 de Marzo al 5 de Abril) ---
+    // Corregido: Hoy es 25, así que NO entrará aquí hasta el 27.
+    if ((mes === 3 && dia >= 27) || (mes === 4 && dia <= 5)) {
+      return precio_semana_santa || precio_alta || precio_temporada_baja || precio_noche || 0;
+    }
+
+    // --- TEMPORADA ALTA (Diciembre 15 - Enero 15) ---
+    if ((mes === 12 && dia >= 15) || (mes === 1 && dia <= 15)) {
+      return precio_alta || precio_noche || 0;
+    }
+
+    // --- TEMPORADA BAJA (HOY 25 DE MARZO CAE AQUÍ) ---
+    // Prioridad: Temporada Baja -> Precio Base -> Cualquier otro disponible
+    return precio_temporada_baja || precio_noche || 0;
+  };
+
+  // ==========================================
+  // 2. LÓGICA DE IMAGEN UNIFICADA (SIN CAMBIOS)
+  // ==========================================
   const FALLBACK = "https://placehold.co/600x400?text=Imagen+No+Disponible";
   let displayImage = FALLBACK;
+  if (galeria?.[0]) displayImage = galeria[0];
+  else if (imagen_url) displayImage = imagen_url;
+  else if (imagenes?.[0]) displayImage = imagenes[0];
+  else if (imagen_principal) displayImage = imagen_principal;
 
-  // 1. Intentar con la tabla de Alquiler (galeria o imagen_url)
-  if (galeria && Array.isArray(galeria) && galeria.length > 0) {
-    displayImage = galeria[0];
-  } else if (imagen_url) {
-    displayImage = imagen_url;
-  }
-  // 2. Si sigue siendo el fallback, intentar con la tabla de Ventas (imagenes o imagen_principal)
-  else if (imagenes && Array.isArray(imagenes) && imagenes.length > 0) {
-    displayImage = imagenes[0];
-  } else if (imagen_principal) {
-    displayImage = imagen_principal;
-  }
+  // ==========================================
+  // 3. FORMATEO DE PRECIOS (DIVISIÓN CLARA)
+  // ==========================================
 
-  // --- LÓGICA DE PRECIO ---
-  const precioMostrar = isVenta ? precio_cop : precio_noche;
+  // VENTA: Se mantiene intacto como lo tenías
+  // ALQUILER: Usa la nueva lógica de fechas
+  const precioFinal = isVenta ? precio_cop : calcularPrecioAlquilerHoy();
+
   const precioFormateado = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
     maximumFractionDigits: 0
-  }).format(precioMostrar || 0);
+  }).format(precioFinal || 0);
 
   const handleCardClick = () => {
     const ruta = isVenta ? `/venta/${id}` : `/propiedad/${id}`;
@@ -68,14 +82,9 @@ const PropertyCard = ({ data }) => {
           <img
             src={displayImage}
             alt={titulo || nombre}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "https://placehold.co/600x400?text=Error+al+cargar+foto";
-            }}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
 
-          {/* Etiqueta dinámica */}
           <div className={`absolute top-4 left-4 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border ${isVenta ? 'bg-green-600 text-white border-green-400' : 'bg-white/95 text-gray-800 border-white/50'
             }`}>
             {isVenta ? 'En Venta' : (tipo || 'Alquiler')}
@@ -93,12 +102,10 @@ const PropertyCard = ({ data }) => {
 
         <div className="p-6 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-bold text-gray-900 line-clamp-1">
-              {titulo || nombre}
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{titulo || nombre}</h3>
             <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
               <Star size={14} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-xs font-bold text-gray-800">{calificacion || '4.5'}</span>
+              <span className="text-xs font-bold text-gray-800">{calificacion || 'New'}</span>
             </div>
           </div>
 
@@ -110,11 +117,14 @@ const PropertyCard = ({ data }) => {
           <div className="pt-5 border-t border-gray-100 flex items-center justify-between mt-auto">
             <div>
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                {isVenta ? 'Precio Total' : 'Precio por noche'}
+                {isVenta ? 'Precio Total' : 'Precio desde'}
               </span>
               <div className="flex items-baseline gap-1">
-                <span className="text-xl font-extrabold text-indigo-600">{precioFormateado}</span>
-                {!isVenta && <span className="text-xs text-gray-400">/ noche</span>}
+                <span className="text-xl font-extrabold text-indigo-600">
+                  {/* Si es venta, muestra precio_cop. Si es alquiler, muestra el calculado. */}
+                  {precioFinal > 0 ? precioFormateado : "Consultar"}
+                </span>
+                {!isVenta && precioFinal > 0 && <span className="text-xs text-gray-400">/ noche</span>}
               </div>
             </div>
 
@@ -125,11 +135,7 @@ const PropertyCard = ({ data }) => {
         </div>
       </div>
 
-      <ImageModal
-        isOpen={!!zoomImage}
-        imageSrc={zoomImage}
-        onClose={() => setZoomImage(null)}
-      />
+      <ImageModal isOpen={!!zoomImage} imageSrc={zoomImage} onClose={() => setZoomImage(null)} />
     </>
   );
 };

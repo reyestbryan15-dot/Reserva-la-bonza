@@ -7,7 +7,7 @@ import {
   Tv, Utensils, Car, Trees, Lock, Coffee, Search
 } from 'lucide-react';
 import BookingCard from '../components/BookingCard';
-import ImageModal from './ImageModal'; // IMPORTANTE: Importar el modal de zoom
+import ImageModal from './ImageModal';
 
 const AMENITY_MAP = {
   wifi: { icon: Wifi, label: 'Wifi Gratis' },
@@ -29,15 +29,41 @@ const PropertyDetail = () => {
   const checkOut = searchParams.get('checkout');
   const guests = searchParams.get('guests');
   const { t } = useLanguage();
+
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fechasOcupadas, setFechasOcupadas] = useState([]);
-  const [activeImage, setActiveImage] = useState(null); // NUEVO: Estado para el zoom
+  const [activeImage, setActiveImage] = useState(null);
+
+  // ==========================================
+  // 1. FUNCIONES DE LÓGICA DE PRECIOS (TEMPORADAS)
+  // ==========================================
+  const obtenerPrecioPorFecha = (propiedad, fechaInicio) => {
+    if (!fechaInicio) return propiedad.precio_noche_baja || propiedad.precio;
+
+    const fecha = new Date(fechaInicio);
+    const mes = fecha.getMonth() + 1; // Ene=1, Feb=2...
+    const dia = fecha.getDate();
+
+    // Lógica Semana Santa 2026 (Marzo 29 - Abril 5)
+    if ((mes === 3 && dia >= 29) || (mes === 4 && dia <= 5)) {
+      return propiedad.precio_semana_santa || propiedad.precio_noche_alta;
+    }
+
+    // Lógica Navidad/Año Nuevo (Dic 15 - Ene 15)
+    if ((mes === 12 && dia >= 15) || (mes === 1 && dia <= 15)) {
+      return propiedad.precio_noche_alta;
+    }
+
+    // Precio por defecto (Temporada Baja)
+    return propiedad.precio_noche_baja || propiedad.precio;
+  };
 
   useEffect(() => {
     const fetchHotelYReservas = async () => {
       try {
         setLoading(true);
+        // Traer datos de la propiedad
         const { data: hotelData, error: hotelError } = await supabase
           .from('alojamientos')
           .select('*')
@@ -45,8 +71,12 @@ const PropertyDetail = () => {
           .single();
 
         if (hotelError) throw hotelError;
-        setHotel(hotelData);
 
+        // Inyectar el precio dinámico antes de guardar en el estado
+        const precioActual = obtenerPrecioPorFecha(hotelData, checkIn);
+        setHotel({ ...hotelData, precio_final: precioActual });
+
+        // Traer reservas para bloquear calendario
         const { data: reservasData, error: reservasError } = await supabase
           .from('reservas')
           .select('fecha_llegada, fecha_salida')
@@ -68,134 +98,96 @@ const PropertyDetail = () => {
           setFechasOcupadas(diasParaBloquear);
         }
       } catch (error) {
-        console.error("Error cargando datos:", error);
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     };
 
     if (id) fetchHotelYReservas();
-  }, [id]);
+  }, [id, checkIn]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-gray-500 font-medium">{t('details.loading')}...</div>;
-  if (!hotel) return <div className="text-center py-20 text-red-500">Propiedad no encontrada</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center">Cargando...</div>;
+  if (!hotel) return <div className="text-center py-20">Propiedad no encontrada</div>;
 
-  const fallbackImage = "https://via.placeholder.com/800x600?text=No+Image";
+  // ==========================================
+  // 2. LÓGICA DE GALERÍA DE IMÁGENES
+  // ==========================================
   const imagesSource = hotel.images || hotel.galeria || [];
-
-  let displayImages = [];
-  if (Array.isArray(imagesSource) && imagesSource.length > 0) {
-    displayImages = [...imagesSource];
-  } else if (hotel.imagen_url) {
-    displayImages = [hotel.imagen_url];
-  } else {
-    displayImages = [fallbackImage];
-  }
-
-  while (displayImages.length < 5) {
-    displayImages.push(displayImages[0] || fallbackImage);
-  }
+  let displayImages = Array.isArray(imagesSource) && imagesSource.length > 0 ? [...imagesSource] : [hotel.imagen_url || "https://via.placeholder.com/800x600"];
+  while (displayImages.length < 5) displayImages.push(displayImages[0]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-
-      <Link to="/propiedades" className="inline-flex items-center text-gray-500 hover:text-blue-600 mb-6 transition-colors font-medium">
-        <ArrowLeft size={20} className="mr-2" />
-        {t('details.back')}
+      <Link to="/propiedades" className="inline-flex items-center text-gray-500 hover:text-blue-600 mb-6 font-medium">
+        <ArrowLeft size={20} className="mr-2" /> Volver al catálogo
       </Link>
 
-      {/* GALERÍA DE FOTOS CON ZOOM */}
-      <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 h-auto md:h-[500px] mb-10 rounded-3xl overflow-hidden shadow-xl">
-        {/* Foto Grande */}
-        <div
-          onClick={() => setActiveImage(displayImages[0])}
-          className="col-span-2 md:col-span-2 md:row-span-2 relative group cursor-zoom-in h-[300px] md:h-full overflow-hidden"
-        >
-          <img
-            src={displayImages[0]}
-            alt="Principal"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+      {/* --- SECCIÓN GALERÍA --- */}
+      <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-3 h-[300px] md:h-[500px] mb-10 rounded-3xl overflow-hidden shadow-xl">
+        <div onClick={() => setActiveImage(displayImages[0])} className="col-span-2 md:row-span-2 relative group cursor-zoom-in overflow-hidden">
+          <img src={displayImages[0]} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Principal" />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
             <Search className="text-white" size={48} />
           </div>
         </div>
-
-        {/* Fotos Pequeñas */}
         {displayImages.slice(1, 5).map((img, index) => (
-          <div
-            key={index}
-            onClick={() => setActiveImage(img)}
-            className="relative overflow-hidden h-[150px] md:h-full cursor-zoom-in group"
-          >
-            <img src={img} alt={`Vista ${index}`} className="w-full h-full object-cover opacity-95 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
-            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Search className="text-white" size={24} />
-            </div>
+          <div key={index} onClick={() => setActiveImage(img)} className="relative overflow-hidden cursor-zoom-in group">
+            <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Vista" />
           </div>
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+      <div className="flex flex-col md:flex-row justify-between gap-8">
+        {/* --- SECCIÓN INFORMACIÓN (IZQUIERDA) --- */}
         <div className="flex-1 space-y-8">
           <div>
-            <h1 className="text-4xl font-extrabold text-gray-900 mb-3 leading-tight">{hotel.name || hotel.titulo}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-gray-500 text-sm md:text-base">
-              <span className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
+            <h1 className="text-4xl font-black text-gray-900 mb-3">{hotel.name || hotel.titulo}</h1>
+            <div className="flex gap-4 text-gray-500">
+              <span className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full text-blue-700">
                 <MapPin size={16} /> {hotel.address || hotel.ubicacion}
-              </span>
-              <span className="flex items-center gap-1 px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full font-medium">
-                <Star size={16} className="fill-yellow-500 text-yellow-500" /> {hotel.rating || hotel.calificacion || 'New'}
               </span>
             </div>
           </div>
 
           <div className="prose prose-lg text-gray-600">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{t('details.description')}</h3>
-            <p className="leading-relaxed whitespace-pre-line">{hotel.description || hotel.descripcion}</p>
+            <h3 className="text-xl font-bold text-gray-800">Descripción</h3>
+            <p className="whitespace-pre-line">{hotel.description || hotel.descripcion}</p>
           </div>
 
-          <div className="border-t border-b border-gray-100 py-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">{t('details.services')}</h3>
-            <div className="flex flex-wrap gap-4 md:gap-6">
-              {hotel.amenities && Array.isArray(hotel.amenities) && hotel.amenities.length > 0 ? (
-                hotel.amenities.map((amenityKey) => {
-                  const Item = AMENITY_MAP[amenityKey];
-                  if (!Item) return null;
-                  const IconComponent = Item.icon;
-                  return (
-                    <div key={amenityKey} className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
-                      <IconComponent className="text-blue-600" size={24} />
-                      <span className="font-semibold text-gray-700">{Item.label}</span>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className="text-gray-400 italic">No hay servicios especificados.</p>
-              )}
+          <div className="border-y py-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Servicios Incluidos</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {hotel.amenities?.map((amenityKey) => {
+                const Item = AMENITY_MAP[amenityKey];
+                return Item ? (
+                  <div key={amenityKey} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border">
+                    <Item.icon className="text-blue-600" size={24} />
+                    <span className="font-bold text-gray-700">{Item.label}</span>
+                  </div>
+                ) : null;
+              })}
             </div>
           </div>
         </div>
 
-        <div className="w-full md:w-[350px] flex-shrink-0 sticky top-24 z-10">
+        {/* --- SECCIÓN RESERVA (DERECHA / ALQUILER) --- */}
+        <div className="w-full md:w-[400px] sticky top-24 h-fit">
           <BookingCard
-            property={hotel} // <--- AQUÍ LE PASAS TODO EL OBJETO CON LOS PRECIOS NUEVOS
-            rating={hotel.rating || hotel.calificacion || 5}
-            reviews={120} // O hotel.reviews si lo tienes
+            property={{ ...hotel, precio: hotel.precio_final }} // Le pasamos el precio ya calculado
+            excludedDates={fechasOcupadas}
             checkIn={checkIn}
             checkOut={checkOut}
             numGuests={guests}
-            excludedDates={fechasOcupadas}
           />
+          {/* Aviso de Temporada */}
+          <p className="text-xs text-center text-gray-400 mt-4 italic">
+            * El precio se ajusta automáticamente según temporada alta/baja y festivos.
+          </p>
         </div>
       </div>
 
-      {/* COMPONENTE DE ZOOM AL FINAL */}
-      <ImageModal
-        isOpen={!!activeImage}
-        imageSrc={activeImage}
-        onClose={() => setActiveImage(null)}
-      />
+      <ImageModal isOpen={!!activeImage} imageSrc={activeImage} onClose={() => setActiveImage(null)} />
     </div>
   );
 };
