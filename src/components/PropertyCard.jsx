@@ -27,20 +27,28 @@ const PropertyCard = ({ data }) => {
     const mes = hoy.getMonth() + 1;
     const dia = hoy.getDate();
 
+    let precioCalculado = 0;
+
     // --- TEMPORADA SEMANA SANTA 2026 (Del 27 de Marzo al 5 de Abril) ---
-    // Corregido: Hoy es 25, así que NO entrará aquí hasta el 27.
     if ((mes === 3 && dia >= 27) || (mes === 4 && dia <= 5)) {
-      return precio_semana_santa || precio_alta || precio_temporada_baja || precio_noche || 0;
+      precioCalculado = precio_semana_santa || precio_alta || precio_temporada_baja || precio_noche || 0;
     }
-
     // --- TEMPORADA ALTA (Diciembre 15 - Enero 15) ---
-    if ((mes === 12 && dia >= 15) || (mes === 1 && dia <= 15)) {
-      return precio_alta || precio_noche || 0;
+    else if ((mes === 12 && dia >= 15) || (mes === 1 && dia <= 15)) {
+      precioCalculado = precio_alta || precio_noche || 0;
+    }
+    // --- TEMPORADA BAJA (HOY 26 DE MARZO) ---
+    else {
+      precioCalculado = precio_temporada_baja || precio_noche || 0;
     }
 
-    // --- TEMPORADA BAJA (HOY 25 DE MARZO CAE AQUÍ) ---
-    // Prioridad: Temporada Baja -> Precio Base -> Cualquier otro disponible
-    return precio_temporada_baja || precio_noche || 0;
+    // --- MEJORA: CONVERTIR DE "700" A "700.000" ---
+    // Si el precio es menor a 10000, asumimos que está en formato de miles y lo multiplicamos
+    if (precioCalculado > 0 && precioCalculado < 10000) {
+      return precioCalculado * 1000;
+    }
+
+    return precioCalculado;
   };
 
   // ==========================================
@@ -54,11 +62,8 @@ const PropertyCard = ({ data }) => {
   else if (imagen_principal) displayImage = imagen_principal;
 
   // ==========================================
-  // 3. FORMATEO DE PRECIOS (DIVISIÓN CLARA)
+  // 3. FORMATEO DE PRECIOS
   // ==========================================
-
-  // VENTA: Se mantiene intacto como lo tenías
-  // ALQUILER: Usa la nueva lógica de fechas
   const precioFinal = isVenta ? precio_cop : calcularPrecioAlquilerHoy();
 
   const precioFormateado = new Intl.NumberFormat('es-CO', {
@@ -121,14 +126,19 @@ const PropertyCard = ({ data }) => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-xl font-extrabold text-indigo-600">
-                  {/* Si es venta, muestra precio_cop. Si es alquiler, muestra el calculado. */}
                   {precioFinal > 0 ? precioFormateado : "Consultar"}
                 </span>
                 {!isVenta && precioFinal > 0 && <span className="text-xs text-gray-400">/ noche</span>}
               </div>
             </div>
 
-            <button className="bg-gray-50 group-hover:bg-indigo-600 text-gray-900 group-hover:text-white p-3 rounded-2xl transition-all">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick();
+              }}
+              className="bg-gray-50 group-hover:bg-indigo-600 text-gray-900 group-hover:text-white p-3 rounded-2xl transition-all"
+            >
               <ArrowRight size={20} />
             </button>
           </div>

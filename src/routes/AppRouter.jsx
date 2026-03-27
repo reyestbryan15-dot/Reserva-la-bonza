@@ -15,6 +15,7 @@ import AboutPage from '../components/AboutPage';
 import Ventas from "../components/Ventas";
 import CancelarReserva from "../components/CancelarReserva";
 import Contacto from '../components/Contacto';
+import ResetPassword from '../components/ResetPassword';
 
 // Auth
 import LoginPage from '../components/auth/LoginPage';
@@ -22,7 +23,7 @@ import LoginPage from '../components/auth/LoginPage';
 const AppRouter = ({ user, onLogout, onLogin }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans text-gray-800">
-      
+
       {/* Navbar con rutas actualizadas */}
       <Navbar user={user} onLogout={onLogout} />
 
@@ -34,7 +35,7 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
               <GridAlojamientos limit={3} />
             </>
           } />
-          
+
           <Route path="/cancelar" element={<div className="text-5xl font-black p-20">ENTRÓ A CANCELAR</div>} />
           <Route path="/propiedades" element={<GridAlojamientos />} />
           <Route path="/propiedad/:id" element={<PropertyDetail />} />
@@ -44,8 +45,9 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/login" element={<LoginPage onLogin={onLogin} />} />
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-          
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
