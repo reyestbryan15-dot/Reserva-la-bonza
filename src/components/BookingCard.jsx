@@ -12,25 +12,17 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
   const [startDate, setStartDate] = useState(checkIn ? new Date(checkIn) : null);
   const [endDate, setEndDate] = useState(checkOut ? new Date(checkOut) : null);
   const [guests, setGuests] = useState(parseInt(numGuests) || 1);
-  const [totalNoches, setTotalNoches] = useState(0);
 
-  // 2. CONFIGURACIÓN DE COSTOS
-  // Mantenemos tu lógica de validación de 1000 para evitar errores de base de datos
-  const valorManilla = property.costo_manilla < 1000 ? property.costo_manilla * 1000 : (property.costo_manilla || 25000);
-  const precioBaseNoche = property.precio_final || property.precio_noche || 0;
+  // 2. CONFIGURACIÓN DE COSTOS (Con protección contra nulos)
+  const valorManilla = (property?.costo_manilla < 1000 ? property.costo_manilla * 1000 : property?.costo_manilla) || 25000;
+  const precioBaseNoche = property?.precio_final || property?.precio_noche || 0;
 
-  // 3. CÁLCULO DINÁMICO DE NOCHES
-  useEffect(() => {
-    if (startDate && endDate) {
-      const diffTime = Math.abs(endDate - startDate);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      setTotalNoches(diffDays > 0 ? diffDays : 0);
-    } else {
-      setTotalNoches(0);
-    }
-  }, [startDate, endDate]);
+  // 3. CÁLCULO DE NOCHES (Calculado directamente en el render para evitar delays de useEffect)
+  const totalNoches = (startDate && endDate)
+    ? Math.max(0, Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24)))
+    : 0;
 
-  // 4. TOTALES PARA MOSTRAR EN PANTALLA
+  // 4. TOTALES DINÁMICOS
   const subtotalEstadia = precioBaseNoche * totalNoches;
   const costoTotalManillas = guests * valorManilla;
   const totalReserva = subtotalEstadia + costoTotalManillas;
@@ -43,24 +35,20 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
     }).format(val || 0);
   };
 
-  // 5. FUNCIÓN PARA IR AL FORMULARIO DE RESERVA (MEJORADA)
   const handleBooking = () => {
     if (!startDate || !endDate) {
       alert(t('booking.alert_select_dates'));
       return;
     }
-
     const checkinStr = startDate.toISOString().split('T')[0];
     const checkoutStr = endDate.toISOString().split('T')[0];
 
-    // PASAMOS EL PRECIO CALCULADO (subtotalEstadia) POR URL 
-    // para que la siguiente página no tenga que recalcular y marque 0
-    navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}`);
+    // Enviamos el precio base y las manillas por separado para que ReservationPage no se confunda
+    navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
   };
 
   return (
     <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sticky top-24">
-      {/* Encabezado: Precio por noche */}
       <div className="mb-6">
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-black text-gray-900">
@@ -71,7 +59,6 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
       </div>
 
       <div className="space-y-4 mb-6">
-        {/* Selector de Fechas */}
         <DateRangeSelector
           startDate={startDate}
           endDate={endDate}
@@ -81,7 +68,6 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
           }}
         />
 
-        {/* Selector de Huéspedes */}
         <div className="relative">
           <label className="absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
             {t('booking.guests')}
@@ -106,17 +92,16 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
         </div>
       </div>
 
-      {/* Botón Principal */}
       <button
         onClick={handleBooking}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-100 transition-all active:scale-95 mb-4"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 mb-4"
       >
         {t('booking.book_now')}
       </button>
 
-      {/* Desglose Detallado */}
+      {/* DESGLOSE: Ahora se actualiza al instante al cambiar 'guests' */}
       {totalNoches > 0 && (
-        <div className="space-y-3 pt-4 border-t border-dashed text-sm animate-in fade-in slide-in-from-top-2">
+        <div className="space-y-3 pt-4 border-t border-dashed text-sm">
           <div className="flex justify-between text-gray-600">
             <span className="underline decoration-gray-300">
               {formatCurrency(precioBaseNoche)} x {totalNoches} noches
@@ -126,7 +111,7 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
 
           <div className="flex justify-between text-gray-600">
             <span>Registro / Manillas ({guests} pers.)</span>
-            <span>{formatCurrency(costoTotalManillas)}</span>
+            <span className="font-medium text-gray-900">{formatCurrency(costoTotalManillas)}</span>
           </div>
 
           <div className="flex justify-between font-black text-gray-900 text-lg pt-2 border-t mt-2">
