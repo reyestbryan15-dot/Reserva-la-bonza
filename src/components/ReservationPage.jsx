@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Calendar, Sparkles, CheckCircle, Users } from 'lucide-react';
-import DatePicker, { registerLocale } from "react-datepicker";
+import { ArrowLeft, User, Calendar, Sparkles, CheckCircle } from 'lucide-react';
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { es } from 'date-fns/locale';
-import { differenceInDays, format, addDays } from 'date-fns';
+import { registerLocale } from "react-datepicker";
+import esLocale from 'date-fns/locale/es';
+import { differenceInDays, format } from 'date-fns';
 import { useLanguage } from '../context/LanguageContext';
-
-// IMPORTACIONES DE BACKEND
 import { supabase } from '../../backend/supabaseClient';
 import PaymentCard from '../components/PaymentCard';
+
+registerLocale('es', esLocale);
 
 const ReservationPage = () => {
   const navigate = useNavigate();
@@ -20,194 +21,158 @@ const ReservationPage = () => {
   const [reservationSuccess, setReservationSuccess] = useState(false);
   const [createdReservationId, setCreatedReservationId] = useState(null);
 
-  // --- ESTADOS DE PRECIOS Y PROPIEDAD ---
   const [propertyData, setPropertyData] = useState(null);
-  const [extraPrices, setExtraPrices] = useState({ limpieza: 0, taxi: 80000 });
   const [currentSubtotal, setCurrentSubtotal] = useState(0);
+  const [extraPrices, setExtraPrices] = useState({ limpieza: 0 });
 
   const [formData, setFormData] = useState({
     nombre: '', apellido: '', email: '', telefono: '',
-    tipoDocumento: 'CC', numeroDocumento: '', huespedes: 1
+    numeroDocumento: '', huespedes: 1
   });
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [wantsCleaning, setWantsCleaning] = useState(false);
-  const [wantsTaxi, setWantsTaxi] = useState(false);
 
   const propertyId = searchParams.get('propertyId');
   const propertyName = searchParams.get('propertyName') || "Propiedad";
 
-  // 1. CARGAR DATOS COMPLETOS DE LA PROPIEDAD
+  // 1. CARGA INICIAL Y CONTROL DE PRECIO
   useEffect(() => {
     const fetchPropertyInfo = async () => {
-      if (!propertyId || propertyId === "sin-id") return;
-
-      const { data, error } = await supabase
-        .from('alojamientos')
-        .select('*')
-        .eq('id', propertyId)
-        .single();
-
-      if (data && !error) {
+      if (!propertyId) return;
+      const { data } = await supabase.from('alojamientos').select('*').eq('id', propertyId).single();
+      if (data) {
         setPropertyData(data);
-        const valorAseo = data.costo_aseo < 1000 ? data.costo_aseo * 1000 : data.costo_aseo;
-        setExtraPrices(prev => ({ ...prev, limpieza: valorAseo }));
+        // Corrección factor 1000 para Aseo
+        const costoAseoReal = data.costo_aseo < 1000 ? data.costo_aseo * 1000 : data.costo_aseo;
+        setExtraPrices({ limpieza: costoAseoReal || 0 });
+
+        // --- LA CLAVE AQUÍ ---
+        // Solo si NO hay un precio en la URL, calculamos el inicial desde la DB
+        const precioUrl = searchParams.get('price');
+        if (precioUrl) {
+          setCurrentSubtotal(parseFloat(precioUrl));
+        } else {
+          const checkinUrl = searchParams.get('checkin');
+          const checkoutUrl = searchParams.get('checkout');
+          if (checkinUrl && checkoutUrl) {
+            const noches = Math.max(0, differenceInDays(new Date(checkoutUrl), new Date(checkinUrl)));
+            setCurrentSubtotal((data.precio_noche || 0) * noches);
+          }
+        }
       }
     };
-    fetchPropertyInfo();
-  }, [propertyId]);
 
-  // 2. SINCRONIZACIÓN INICIAL DESDE LA URL
-  useEffect(() => {
+    // Seteo de estados iniciales desde URL
     const checkinUrl = searchParams.get('checkin');
     const checkoutUrl = searchParams.get('checkout');
     const guestsUrl = searchParams.get('guests');
 
-    if (checkinUrl && checkinUrl !== "null") setStartDate(new Date(checkinUrl));
-    if (checkoutUrl && checkoutUrl !== "null") setEndDate(new Date(checkoutUrl));
+    if (checkinUrl) setStartDate(new Date(checkinUrl));
+    if (checkoutUrl) setEndDate(new Date(checkoutUrl));
     if (guestsUrl) setFormData(prev => ({ ...prev, huespedes: parseInt(guestsUrl) || 1 }));
-  }, [searchParams]);
 
-  // 3. LÓGICA DE TEMPORADAS
-  const getSeasonPrice = (date, data) => {
-    if (!date || !data) return 0;
-    const d = new Date(date);
-    const dateStr = format(d, 'yyyy-MM-dd');
-    const month = d.getMonth() + 1;
-    const day = d.getDate();
+    fetchPropertyInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId]); // Solo se ejecuta al montar el componente
 
-    if ((month === 12 && day >= 15) || (month === 1 && day <= 15)) {
-      return Number(data.precio_alta || data.precio_temporada_baja) * 1000;
-    }
-    if (dateStr >= '2026-03-29' && dateStr <= '2026-04-05') {
-      return Number(data.precio_semana_santa || data.precio_temporada_alta) * 1000;
-    }
-    if (month === 10 && day >= 5 && day <= 12) {
-      return Number(data.precio_semana_uribe || data.precio_temporada_media) * 1000;
-    }
-    const festivos = ['2026-03-23', '2026-05-01', '2026-05-18', '2026-06-08', '2026-06-15', '2026-06-29', '2026-07-20', '2026-08-07', '2026-08-17'];
-    if (festivos.includes(dateStr)) {
-      return Number(data.precio_media || data.precio_festivo || data.precio_temporada_baja) * 1000;
-    }
-    return Number(data.precio_temporada_baja || 0) * 1000;
-  };
-
-  // 4. RECÁLCULO DE SUBTOTAL
+  // 2. RE-CÁLCULO SOLO SI EL USUARIO CAMBIA LAS FECHAS EN PANTALLA
   useEffect(() => {
-    if (startDate && endDate && propertyData) {
-      let totalAcumulado = 0;
-      let tempDate = new Date(startDate);
-      const limitDate = new Date(endDate);
-      while (tempDate < limitDate) {
-        totalAcumulado += getSeasonPrice(tempDate, propertyData);
-        tempDate.setDate(tempDate.getDate() + 1);
-      }
-      setCurrentSubtotal(totalAcumulado);
+    // Si ya tenemos data y las fechas cambian después de la carga inicial
+    if (propertyData && startDate && endDate) {
+      const noches = Math.max(0, differenceInDays(endDate, startDate));
+      const precioBase = propertyData.precio_final || propertyData.precio_noche || 0;
+
+      // Solo actualizamos si las fechas no coinciden con las de la URL original 
+      // o simplemente dejamos que el usuario tome el control
+      setCurrentSubtotal(precioBase * noches);
     }
-  }, [startDate, endDate, propertyData]);
+  }, [startDate, endDate]); // Escucha cambios manuales en el calendario
 
-  // Totales finales (Lógica de Taxi comentada)
   const nights = startDate && endDate ? Math.max(0, differenceInDays(endDate, startDate)) : 0;
-  const costManillas = ((propertyData?.costo_manilla || 0) * 1000) * formData.huespedes;
-  const totalFinal = currentSubtotal + costManillas + (wantsCleaning ? extraPrices.limpieza : 0) /* + (wantsTaxi ? extraPrices.taxi : 0) */;
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // CORRECCIÓN MANILLAS: Igual que en BookingCard
+  const valorManilla = propertyData?.costo_manilla < 1000 ? propertyData.costo_manilla * 1000 : (propertyData?.costo_manilla || 0);
+  const costManillas = valorManilla * formData.huespedes;
+  const totalFinal = currentSubtotal + costManillas + (wantsCleaning ? extraPrices.limpieza : 0);
 
   const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (nights < 1) return alert("Selecciona fechas válidas");
+    if (nights < 1) return alert(t('booking.alert_select_dates'));
     setIsProcessing(true);
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data, error } = await supabase.from('reservas').insert([{
-        propiedad_id: propertyId,
-        propiedad_titulo: propertyName,
-        user_id: user?.id || null,
-        nombre_cliente: `${formData.nombre} ${formData.apellido}`,
-        email: formData.email,
-        telefono: formData.telefono,
-        fecha_llegada: format(startDate, 'yyyy-MM-dd'),
-        fecha_salida: format(endDate, 'yyyy-MM-dd'),
-        noches: nights,
-        huespedes: formData.huespedes,
-        precio_total: totalFinal,
-        estado: 'pendiente',
-        comentarios: `Cédula: ${formData.numeroDocumento}. Aseo: ${wantsCleaning ? 'SI' : 'NO'}`
-      }]).select();
-
-      if (error) throw error;
-      setCreatedReservationId(data[0].id.slice(0, 8).toUpperCase());
-      setReservationSuccess(true);
-    } catch (err) {
-      alert("Error al crear reserva: " + err.message);
-    } finally { setIsProcessing(false); }
+      const { data, error } = await supabase.rpc('insertar_reserva_segura', {
+        p_propiedad_id: propertyId,
+        p_propiedad_titulo: propertyName,
+        p_fecha_llegada: format(startDate, 'yyyy-MM-dd'),
+        p_fecha_salida: format(endDate, 'yyyy-MM-dd'),
+        p_noches: nights,
+        p_huespedes: formData.huespedes,
+        p_precio_total: totalFinal,
+        p_nombre_cliente: `${formData.nombre} ${formData.apellido}`,
+        p_email: formData.email,
+        p_telefono: formData.telefono
+      });
+      if (data?.success) {
+        setCreatedReservationId(data.reserva_id.slice(0, 8).toUpperCase());
+        await supabase.from('reservas').update({ comentario: `CC: ${formData.numeroDocumento}. Aseo: ${wantsCleaning ? 'SI' : 'NO'}` }).eq('id', data.reserva_id);
+        setReservationSuccess(true);
+      }
+    } catch (err) { alert(err.message); } finally { setIsProcessing(false); }
   };
 
   if (reservationSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 flex flex-col items-center">
+      <div className="min-h-screen bg-gray-50 py-12 px-4 flex flex-col items-center pt-32">
         <CheckCircle className="text-green-600 w-16 h-16 mb-4 animate-bounce" />
-        <h1 className="text-3xl font-bold">¡Reserva Creada!</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('booking.success_title')}</h1>
         <PaymentCard reservationId={createdReservationId} totalPrice={formatCOP(totalFinal)} bancolombiaNumber="517-000023-68" nequiNumber="3163563784" />
-        <button onClick={() => navigate('/')} className="mt-8 text-indigo-600 font-bold underline">Volver al inicio</button>
+        <button onClick={() => navigate('/')} className="mt-8 text-indigo-600 font-bold underline">{t('common.back_home')}</button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 pt-24 px-4 text-gray-900">
+    <div className="min-h-screen bg-gray-50 pb-20 pt-32 px-4 text-gray-900">
       <div className="max-w-6xl mx-auto">
         <button onClick={() => navigate(-1)} className="flex items-center text-gray-600 font-bold mb-6 hover:text-indigo-600">
-          <ArrowLeft size={20} className="mr-2" /> Volver atrás
+          <ArrowLeft size={20} className="mr-2" /> {t('common.back')}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Calendar className="text-indigo-600" /> Fechas de Estancia</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-900"><Calendar className="text-indigo-600" /> {t('booking.dates_title')}</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-indigo-50 p-3 rounded-xl">
-                  <p className="text-[10px] font-bold text-indigo-500 uppercase">Llegada</p>
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase">{t('booking.check_in')}</p>
                   <DatePicker selected={startDate} onChange={setStartDate} selectsStart startDate={startDate} endDate={endDate} minDate={new Date()} locale="es" dateFormat="dd/MM/yyyy" className="bg-transparent font-bold w-full outline-none" />
                 </div>
                 <div className="bg-indigo-50 p-3 rounded-xl">
-                  <p className="text-[10px] font-bold text-indigo-500 uppercase">Salida</p>
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase">{t('booking.check_out')}</p>
                   <DatePicker selected={endDate} onChange={setEndDate} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} locale="es" dateFormat="dd/MM/yyyy" className="bg-transparent font-bold w-full outline-none" />
                 </div>
               </div>
             </section>
 
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Sparkles className="text-indigo-600" /> Servicios Adicionales</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div onClick={() => setWantsCleaning(!wantsCleaning)} className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${wantsCleaning ? 'border-indigo-600 bg-indigo-50' : 'border-gray-100 hover:border-indigo-200'}`}>
-                  <p className="font-bold">Servicio de Aseo</p>
-                  <p className="text-xs text-gray-500">+{formatCOP(extraPrices.limpieza)}</p>
-                </div>
-                
-                {/* SERVICIO DE TAXI COMENTADO PARA EL FUTURO
-                <div onClick={() => setWantsTaxi(!wantsTaxi)} className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${wantsTaxi ? 'border-indigo-600 bg-indigo-50' : 'border-gray-100 hover:border-indigo-200'}`}>
-                  <p className="font-bold">Taxi al Aeropuerto</p>
-                  <p className="text-xs text-gray-500">+{formatCOP(extraPrices.taxi)}</p>
-                </div>
-                */}
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-900"><Sparkles className="text-indigo-600" /> {t('booking.extra_services')}</h2>
+              <div onClick={() => setWantsCleaning(!wantsCleaning)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${wantsCleaning ? 'border-indigo-600 bg-indigo-50' : 'border-gray-100'}`}>
+                <p className="font-bold">{t('booking.cleaning_service')}</p>
+                <p className="text-xs text-gray-500">+{formatCOP(extraPrices.limpieza)}</p>
               </div>
             </section>
 
             <section className="bg-white p-6 rounded-2xl border shadow-sm">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><User className="text-indigo-600" /> Información del Huésped</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-900"><User className="text-indigo-600" /> {t('booking.guest_info')}</h2>
               <form id="reserva-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required name="nombre" placeholder="Nombre" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-100 outline-none" />
-                <input required name="apellido" placeholder="Apellido" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-100 outline-none" />
-                <input required name="numeroDocumento" placeholder="Cédula / Pasaporte" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-100 outline-none" />
-                <input required name="telefono" placeholder="WhatsApp (con código de país)" onChange={handleInputChange} className="p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-100 outline-none" />
-                <input required name="email" type="email" placeholder="Correo Electrónico" onChange={handleInputChange} className="md:col-span-2 p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-100 outline-none" />
+                <input required placeholder={t('booking.first_name')} value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} className="p-3 border rounded-xl bg-gray-50" />
+                <input required placeholder={t('booking.last_name')} value={formData.apellido} onChange={(e) => setFormData({ ...formData, apellido: e.target.value })} className="p-3 border rounded-xl bg-gray-50" />
+                <input required placeholder={t('booking.id_number')} value={formData.numeroDocumento} onChange={(e) => setFormData({ ...formData, numeroDocumento: e.target.value })} className="p-3 border rounded-xl bg-gray-50" />
+                <input required placeholder={t('booking.phone')} value={formData.telefono} onChange={(e) => setFormData({ ...formData, telefono: e.target.value })} className="p-3 border rounded-xl bg-gray-50" />
+                <input required type="email" placeholder={t('booking.email')} value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="md:col-span-2 p-3 border rounded-xl bg-gray-50" />
               </form>
             </section>
           </div>
@@ -217,25 +182,21 @@ const ReservationPage = () => {
               <h3 className="font-bold text-lg mb-4 text-gray-800 border-b pb-2">{propertyName}</h3>
               <div className="space-y-3 border-b pb-4 mb-4 text-sm text-gray-600">
                 <div className="flex justify-between">
-                  <span className="flex items-center gap-1 font-medium"><Calendar size={14} /> {nights} Noches</span>
+                  <span>{nights} {t('booking.nights')}</span>
                   <span className="font-bold text-gray-900">{formatCOP(currentSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="flex items-center gap-1 font-medium"><Users size={14} /> Manillas</span>
+                  <span>{t('booking.building_registration')}</span>
                   <span className="font-bold text-gray-900">{formatCOP(costManillas)}</span>
                 </div>
-                {wantsCleaning && <div className="flex justify-between text-indigo-600 font-bold"><span>Aseo</span><span>+{formatCOP(extraPrices.limpieza)}</span></div>}
-                
-                {/* DESGLOSE DE TAXI COMENTADO EN EL RESUMEN
-                {wantsTaxi && <div className="flex justify-between text-indigo-600 font-bold"><span>Taxi</span><span>+{formatCOP(extraPrices.taxi)}</span></div>}
-                */}
+                {wantsCleaning && <div className="flex justify-between text-indigo-600 font-bold"><span>{t('booking.cleaning')}</span><span>+{formatCOP(extraPrices.limpieza)}</span></div>}
               </div>
               <div className="flex justify-between font-extrabold text-2xl mb-6 text-indigo-900">
-                <span>Total</span>
+                <span>{t('booking.total')}</span>
                 <span>{formatCOP(totalFinal)}</span>
               </div>
-              <button type="submit" form="reserva-form" disabled={isProcessing} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-700 transition-all disabled:bg-gray-400">
-                {isProcessing ? "Procesando..." : "Confirmar Reserva"}
+              <button type="submit" form="reserva-form" disabled={isProcessing} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg">
+                {isProcessing ? t('common.loading') : t('booking.confirm_button')}
               </button>
             </div>
           </div>

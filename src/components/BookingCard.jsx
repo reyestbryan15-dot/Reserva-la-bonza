@@ -1,167 +1,137 @@
 import React, { useState, useEffect } from 'react';
+import { Minus, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, Calendar, Users } from 'lucide-react';
-import { differenceInDays, format } from 'date-fns';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
 import { useLanguage } from '../context/LanguageContext';
+import DateRangeSelector from './DateRangeSelector';
 
-const BookingCard = ({
-  property,
-  checkIn = null,
-  checkOut = null,
-  numGuests = 1
-}) => {
-  const navigate = useNavigate();
+const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [guestsCount, setGuestsCount] = useState(1);
+  // 1. ESTADOS INICIALES
+  const [startDate, setStartDate] = useState(checkIn ? new Date(checkIn) : null);
+  const [endDate, setEndDate] = useState(checkOut ? new Date(checkOut) : null);
+  const [guests, setGuests] = useState(parseInt(numGuests) || 1);
+  const [totalNoches, setTotalNoches] = useState(0);
 
-  // 1. LÓGICA DE TEMPORADAS CORREGIDA
-  const getSeasonPrice = (date) => {
-    if (!date || !property) return (property?.precio_temporada_baja || 0) * 1000;
+  // 2. CONFIGURACIÓN DE COSTOS
+  // Mantenemos tu lógica de validación de 1000 para evitar errores de base de datos
+  const valorManilla = property.costo_manilla < 1000 ? property.costo_manilla * 1000 : (property.costo_manilla || 25000);
+  const precioBaseNoche = property.precio_final || property.precio_noche || 0;
 
-    const d = new Date(date);
-    const month = d.getMonth() + 1; // Enero es 1, Diciembre es 12
-    const day = d.getDate();
-
-    // Formato YYYY-MM-DD para festivos específicos
-    const dateStr = format(d, 'yyyy-MM-dd');
-
-    // 1. SEMANA SANTA 2026 (Marzo 29 a Abril 5)
-    if (dateStr >= '2026-03-29' && dateStr <= '2026-04-05') {
-      console.log("Detectado: Semana Santa");
-      return (property?.precio_semana_santa || property?.precio_temporada_alta || 0) * 1000;
-    }
-
-    // 2. TEMPORADA ALTA (Diciembre 15 a Enero 15)
-    if ((month === 12 && day >= 15) || (month === 1 && day <= 15)) {
-      console.log("Detectado: Temporada Alta");
-      return (property?.precio_alta || 0) * 1000;
-    }
-
-    // 3. SEMANA DE URIBE / RECESO (Octubre 5 al 12)
-    if (month === 10 && day >= 5 && day <= 12) {
-      console.log("Detectado: Semana Uribe");
-      return (property?.precio_semana_uribe || property?.precio_temporada_media || 0) * 1000;
-    }
-
-    // 4. TEMPORADA MEDIA / FESTIVOS 2026
-    const festivos = [
-      '2026-03-23', '2026-05-01', '2026-05-18', '2026-06-08',
-      '2026-06-15', '2026-06-29', '2026-07-20', '2026-08-07', '2026-08-17'
-    ];
-    if (festivos.includes(dateStr)) {
-      console.log("Detectado: Festivo / Media");
-      return (property?.precio_media || property?.precio_temporada_baja || 0) * 1000;
-    }
-
-    // 5. POR DEFECTO: TEMPORADA BAJA
-    return (property?.precio_temporada_baja || 0) * 1000;
-  };
-
-  // 2. CÁLCULO DE SUMATORIA (Día por día)
-  const calculateStayDetails = () => {
-    if (!startDate || !endDate || endDate <= startDate) return { totalNights: 0, subtotal: 0 };
-
-    let total = 0;
-    let nights = 0;
-    let tempDate = new Date(startDate);
-
-    while (tempDate < endDate) {
-      const priceForThisNight = getSeasonPrice(tempDate);
-      total += priceForThisNight;
-      nights++;
-      tempDate.setDate(tempDate.getDate() + 1);
-    }
-
-    return { totalNights: nights, subtotal: total };
-  };
-
-  const { totalNights, subtotal } = calculateStayDetails();
-  // El costo de manillas también debe ir por 1000 si en la BD dice "8"
-  const costManillas = ((property?.costo_manilla || 0) * 1000) * guestsCount;
-  const totalGeneral = subtotal + costManillas;
-
+  // 3. CÁLCULO DINÁMICO DE NOCHES
   useEffect(() => {
-    if (checkIn && checkIn !== "null") setStartDate(new Date(checkIn));
-    if (checkOut && checkOut !== "null") setEndDate(new Date(checkOut));
-    if (numGuests) setGuestsCount(parseInt(numGuests) || 1);
-  }, [checkIn, checkOut, numGuests]);
+    if (startDate && endDate) {
+      const diffTime = Math.abs(endDate - startDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setTotalNoches(diffDays > 0 ? diffDays : 0);
+    } else {
+      setTotalNoches(0);
+    }
+  }, [startDate, endDate]);
 
-  const handleReservation = () => {
+  // 4. TOTALES PARA MOSTRAR EN PANTALLA
+  const subtotalEstadia = precioBaseNoche * totalNoches;
+  const costoTotalManillas = guests * valorManilla;
+  const totalReserva = subtotalEstadia + costoTotalManillas;
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    }).format(val || 0);
+  };
+
+  // 5. FUNCIÓN PARA IR AL FORMULARIO DE RESERVA (MEJORADA)
+  const handleBooking = () => {
     if (!startDate || !endDate) {
-      alert("Por favor selecciona fechas");
+      alert(t('booking.alert_select_dates'));
       return;
     }
 
-    // Enviamos los valores ya multiplicados por 1000 divididos por 1000 
-    // para que la ReservationPage los reciba como "300" y los multiplique allá (para mantener tu lógica sincronizada)
-    const params = new URLSearchParams({
-      checkin: startDate.toISOString(),
-      checkout: endDate.toISOString(),
-      guests: guestsCount,
-      subtotalAlojamiento: subtotal / 1000,
-      costoManillas: costManillas / 1000,
-      propertyName: property?.titulo,
-      propertyId: property?.id
-    });
+    const checkinStr = startDate.toISOString().split('T')[0];
+    const checkoutStr = endDate.toISOString().split('T')[0];
 
-    navigate(`/reservar?${params.toString()}`);
+    // PASAMOS EL PRECIO CALCULADO (subtotalEstadia) POR URL 
+    // para que la siguiente página no tenga que recalcular y marque 0
+    navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}`);
   };
 
-  const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
-
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 sticky top-24 w-full max-w-sm mx-auto z-30">
-      <div className="mb-4">
-        <span className="text-2xl font-bold text-gray-900">
-          {formatCOP((property?.precio_temporada_baja || 0) * 1000)}
-        </span>
-        <span className="text-gray-500 text-sm"> / noche</span>
-      </div>
-
-      <div className="border border-gray-300 rounded-xl mb-4 overflow-hidden">
-        <div className="grid grid-cols-2 border-b border-gray-300">
-          <div className="p-2 border-r border-gray-300">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase">Llegada</label>
-            <DatePicker selected={startDate} onChange={d => setStartDate(d)} minDate={new Date()} className="w-full text-sm outline-none bg-transparent" />
-          </div>
-          <div className="p-2">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase">Salida</label>
-            <DatePicker selected={endDate} onChange={d => setEndDate(d)} minDate={startDate || new Date()} className="w-full text-sm outline-none bg-transparent" />
-          </div>
-        </div>
-
-        <div className="p-3 bg-white">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-2">Huéspedes</label>
-          <div className="flex items-center justify-between">
-            <button onClick={() => setGuestsCount(Math.max(1, guestsCount - 1))} className="p-1 rounded-full border border-gray-300"><Minus size={16} /></button>
-            <span className="font-bold text-gray-700">{guestsCount} viajeros</span>
-            <button onClick={() => setGuestsCount(guestsCount + 1)} className="p-1 rounded-full border border-gray-300"><Plus size={16} /></button>
-          </div>
+    <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sticky top-24">
+      {/* Encabezado: Precio por noche */}
+      <div className="mb-6">
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black text-gray-900">
+            {formatCurrency(precioBaseNoche)}
+          </span>
+          <span className="text-gray-500 font-medium">/ {t('booking.night')}</span>
         </div>
       </div>
 
-      <button onClick={handleReservation} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg mb-4">
-        Reservar ahora
+      <div className="space-y-4 mb-6">
+        {/* Selector de Fechas */}
+        <DateRangeSelector
+          startDate={startDate}
+          endDate={endDate}
+          onChange={([start, end]) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
+
+        {/* Selector de Huéspedes */}
+        <div className="relative">
+          <label className="absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            {t('booking.guests')}
+          </label>
+          <div className="flex items-center justify-between w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl">
+            <button
+              onClick={() => setGuests(Math.max(1, guests - 1))}
+              className="p-1 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-500"
+            >
+              <Minus size={20} />
+            </button>
+            <span className="font-bold text-gray-800">
+              {guests} {guests === 1 ? t('booking.travelers_singular') : t('booking.travelers_plural')}
+            </span>
+            <button
+              onClick={() => setGuests(guests + 1)}
+              className="p-1 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-500"
+            >
+              <Plus size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Botón Principal */}
+      <button
+        onClick={handleBooking}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-100 transition-all active:scale-95 mb-4"
+      >
+        {t('booking.book_now')}
       </button>
 
-      {totalNights > 0 && (
-        <div className="space-y-2 border-t pt-4">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Alojamiento ({totalNights} noches)</span>
-            <span>{formatCOP(subtotal)}</span>
+      {/* Desglose Detallado */}
+      {totalNoches > 0 && (
+        <div className="space-y-3 pt-4 border-t border-dashed text-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex justify-between text-gray-600">
+            <span className="underline decoration-gray-300">
+              {formatCurrency(precioBaseNoche)} x {totalNoches} noches
+            </span>
+            <span>{formatCurrency(subtotalEstadia)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Manillas ({guestsCount} pers.)</span>
-            <span>{formatCOP(costManillas)}</span>
+
+          <div className="flex justify-between text-gray-600">
+            <span>Registro / Manillas ({guests} pers.)</span>
+            <span>{formatCurrency(costoTotalManillas)}</span>
           </div>
-          <div className="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t">
-            <span>Total base</span>
-            <span className="text-blue-600">{formatCOP(totalGeneral)}</span>
+
+          <div className="flex justify-between font-black text-gray-900 text-lg pt-2 border-t mt-2">
+            <span>{t('booking.total')}</span>
+            <span className="text-blue-600">{formatCurrency(totalReserva)}</span>
           </div>
         </div>
       )}

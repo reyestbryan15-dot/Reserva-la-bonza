@@ -13,14 +13,14 @@ const PropertyCard = ({ data }) => {
 
   const {
     id, titulo, nombre, tipo, ubicacion, calificacion,
-    precio_noche, precio_temporada_baja, precio_alta, precio_semana_santa, // Alquiler
-    precio_cop, // Ventas (No tocar)
-    galeria, imagen_url, imagenes, imagen_principal, // Imágenes
+    precio_temporada_baja, precio_alta, precio_semana_santa, precio_noche, // Alquiler
+    precio_cop, // Ventas
+    galeria, imagen_url, imagenes, imagen_principal,
     isVenta
   } = data;
 
   // ==========================================
-  // 1. LÓGICA DE PRECIOS DINÁMICOS (ALQUILER)
+  // 1. LÓGICA DE PRECIOS DIRECTA (SIN MULTIPLICADORES)
   // ==========================================
   const calcularPrecioAlquilerHoy = () => {
     const hoy = new Date();
@@ -29,40 +29,31 @@ const PropertyCard = ({ data }) => {
 
     let precioCalculado = 0;
 
-    // --- TEMPORADA SEMANA SANTA 2026 (Del 27 de Marzo al 5 de Abril) ---
-    if ((mes === 3 && dia >= 27) || (mes === 4 && dia <= 5)) {
-      precioCalculado = precio_semana_santa || precio_alta || precio_temporada_baja || precio_noche || 0;
+    // SEMANA SANTA 2026 (Marzo 29 - Abril 5)
+    if ((mes === 3 && dia >= 29) || (mes === 4 && dia <= 5)) {
+      precioCalculado = precio_semana_santa || precio_alta || precio_temporada_baja || precio_noche;
     }
-    // --- TEMPORADA ALTA (Diciembre 15 - Enero 15) ---
+    // TEMPORADA ALTA (Diciembre 15 - Enero 15)
     else if ((mes === 12 && dia >= 15) || (mes === 1 && dia <= 15)) {
-      precioCalculado = precio_alta || precio_noche || 0;
+      precioCalculado = precio_alta || precio_temporada_baja || precio_noche;
     }
-    // --- TEMPORADA BAJA (HOY 26 DE MARZO) ---
+    // POR DEFECTO: BAJA
     else {
-      precioCalculado = precio_temporada_baja || precio_noche || 0;
+      precioCalculado = precio_temporada_baja || precio_noche;
     }
 
-    // --- MEJORA: CONVERTIR DE "700" A "700.000" ---
-    // Si el precio es menor a 10000, asumimos que está en formato de miles y lo multiplicamos
-    if (precioCalculado > 0 && precioCalculado < 10000) {
-      return precioCalculado * 1000;
-    }
-
-    return precioCalculado;
+    // Retorna el valor tal cual viene de Supabase (o 0 si no existe)
+    return precioCalculado || 0;
   };
 
   // ==========================================
-  // 2. LÓGICA DE IMAGEN UNIFICADA (SIN CAMBIOS)
+  // 2. IMAGEN
   // ==========================================
   const FALLBACK = "https://placehold.co/600x400?text=Imagen+No+Disponible";
-  let displayImage = FALLBACK;
-  if (galeria?.[0]) displayImage = galeria[0];
-  else if (imagen_url) displayImage = imagen_url;
-  else if (imagenes?.[0]) displayImage = imagenes[0];
-  else if (imagen_principal) displayImage = imagen_principal;
+  const displayImage = galeria?.[0] || imagen_url || imagenes?.[0] || imagen_principal || FALLBACK;
 
   // ==========================================
-  // 3. FORMATEO DE PRECIOS
+  // 3. FORMATEO DE MONEDA
   // ==========================================
   const precioFinal = isVenta ? precio_cop : calcularPrecioAlquilerHoy();
 
@@ -83,6 +74,7 @@ const PropertyCard = ({ data }) => {
         onClick={handleCardClick}
         className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100 flex flex-col h-full"
       >
+        {/* Contenedor de Imagen */}
         <div className="relative h-72 overflow-hidden bg-gray-200">
           <img
             src={displayImage}
@@ -92,7 +84,7 @@ const PropertyCard = ({ data }) => {
 
           <div className={`absolute top-4 left-4 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border ${isVenta ? 'bg-green-600 text-white border-green-400' : 'bg-white/95 text-gray-800 border-white/50'
             }`}>
-            {isVenta ? 'En Venta' : (tipo || 'Alquiler')}
+            {isVenta ? t('search.for_sale') : (tipo || t('search.rent_only'))}
           </div>
 
           <div
@@ -105,6 +97,7 @@ const PropertyCard = ({ data }) => {
           </div>
         </div>
 
+        {/* Contenido de la Tarjeta */}
         <div className="p-6 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-3">
             <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{titulo || nombre}</h3>
@@ -119,16 +112,17 @@ const PropertyCard = ({ data }) => {
             <span className="line-clamp-2">{ubicacion}</span>
           </div>
 
+          {/* Footer de la Tarjeta (Precio) */}
           <div className="pt-5 border-t border-gray-100 flex items-center justify-between mt-auto">
             <div>
               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                {isVenta ? 'Precio Total' : 'Precio desde'}
+                {isVenta ? t('booking.total_price') : t('booking.price_from')}
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-xl font-extrabold text-indigo-600">
-                  {precioFinal > 0 ? precioFormateado : "Consultar"}
+                  {precioFinal > 0 ? precioFormateado : t('common.consult')}
                 </span>
-                {!isVenta && precioFinal > 0 && <span className="text-xs text-gray-400">/ noche</span>}
+                {!isVenta && precioFinal > 0 && <span className="text-xs text-gray-400">/ {t('booking.night')}</span>}
               </div>
             </div>
 

@@ -1,32 +1,19 @@
-import React, { createContext, useState, useContext } from 'react';
-import { translations } from '../components/data/translations'; // <--- IMPORTAMOS AQUÍ
+import React, { createContext, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import '../i18n'; // <--- IMPORTANTE: Esto carga tu configuración de los archivos JSON
 
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('es');
+  const { t, i18n } = useTranslation();
 
+  // Función para cambiar el idioma (usa la lógica oficial de i18next)
   const switchLanguage = (langCode) => {
-    if (translations[langCode]) {
-      setLanguage(langCode);
-    }
+    i18n.changeLanguage(langCode);
   };
 
-  const t = (path) => {
-    const keys = path.split('.');
-    let value = translations[language];
-    
-    for (let key of keys) {
-      if (value && value[key]) {
-        value = value[key];
-      } else {
-        console.warn(`Translation missing for: ${path}`); // Log para depurar
-        return path; 
-      }
-    }
-    
-    return value;
-  };
+  // El valor de 'language' ahora viene del estado global de i18n
+  const language = i18n.language;
 
   return (
     <LanguageContext.Provider value={{ language, switchLanguage, t }}>
