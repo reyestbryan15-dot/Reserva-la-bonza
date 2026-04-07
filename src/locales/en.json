@@ -8,7 +8,8 @@
     "language": "Language",
     "back_home": "Back to Home",
     "back": "Return",
-    "consult": "Consult"
+    "consult": "Consult",
+    "price": "Fee"
   },
   "navbar": {
     "logout": "Logout",
@@ -312,5 +313,23 @@
     "legal_label": "LEGALITY",
     "legal_title": "LEGALITY",
     "legal_full_description": "Reservas La Bonanza SAS is a tourism operator agency identified with NIT 901593475-7, registered under RNT 114606 with the Ministry of Industry and Trade Development, registered with the Santa Marta Chamber of Commerce under No. 254869. We comply with all legal requirements, with a national and international scope of operation."
+  },
+  "admin": {
+    "btn_back": "Return to Panel",
+    "btn_cancel": "Cancel",
+    "btn_publish": "Publish Now",
+    "create_subtitle": "Complete the details to publish your space in the exclusive catalog.",
+    "create_title": "New Property",
+    "label_address": "Geographic Location",
+    "label_capacity": "Maximum Capacity",
+    "label_description": "Property Narrative",
+    "label_name": "Property Name",
+    "label_number": "Room Identifier",
+    "label_price": "Rate per night",
+    "ph_address": "Full address, city and sector",
+    "ph_description": "Describe what makes this place unique...",
+    "ph_name": "Ex. Villa Serenity or Royal Suite",
+    "photos_label": "Image Gallery",
+    "upload_btn": "Add Photos"
   }
 }

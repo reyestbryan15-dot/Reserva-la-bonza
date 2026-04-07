@@ -3,7 +3,7 @@ import { supabase } from '../../../backend/supabaseClient';
 import { useLanguage } from '../../context/LanguageContext';
 import {
   LogOut, Plus, Edit, MapPin, Trash2, LayoutGrid, Tag, Bell,
-  X, Upload, Loader2, CheckCircle, Video, Calendar, User, Mail, CreditCard, Play
+  X, Upload, Loader2, CheckCircle, Video, Play, Search
 } from 'lucide-react';
 
 const AdminPanel = ({ onLogout }) => {
@@ -12,7 +12,6 @@ const AdminPanel = ({ onLogout }) => {
   const [properties, setProperties] = useState([]);
   const [sales, setSales] = useState([]);
   const [reservations, setReservations] = useState([]);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -31,25 +30,27 @@ const AdminPanel = ({ onLogout }) => {
 
   const [formData, setFormData] = useState(initialForm);
 
-  // FUNCIÓN PARA CONVERTIR LINK DE YOUTUBE A EMBED
   const getEmbedUrl = (url) => {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
-    return (match && match[2].length === 11)
-      ? `https://www.youtube.com/embed/${match[2]}`
-      : null;
+    return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
   };
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: props } = await supabase.from('alojamientos').select('*');
-    setProperties(props || []);
-    const { data: vntas } = await supabase.from('ventas_propiedades').select('*').order('created_at', { ascending: false });
-    setSales(vntas || []);
-    const { data: reser } = await supabase.from('reservas').select('*').order('created_at', { ascending: false });
-    setReservations(reser || []);
-    setLoading(false);
+    try {
+      const { data: props } = await supabase.from('alojamientos').select('*');
+      setProperties(props || []);
+      const { data: vntas } = await supabase.from('ventas_propiedades').select('*').order('created_at', { ascending: false });
+      setSales(vntas || []);
+      const { data: reser } = await supabase.from('reservas').select('*').order('created_at', { ascending: false });
+      setReservations(reser || []);
+    } catch (err) {
+      console.error("Error fetching:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -89,7 +90,6 @@ const AdminPanel = ({ onLogout }) => {
     e.preventDefault();
     const isSales = activeTab === 'sales';
     const table = isSales ? 'ventas_propiedades' : 'alojamientos';
-
     const payload = {
       titulo: formData.titulo,
       ubicacion: formData.ubicacion,
@@ -97,7 +97,6 @@ const AdminPanel = ({ onLogout }) => {
       video_url: formData.video_url,
       tipo: formData.tipo || (isSales ? 'Venta' : 'Alquiler')
     };
-
     if (isSales) {
       payload.precio_cop = formData.precio_cop;
       payload.precio_usd = formData.precio_usd;
@@ -115,12 +114,7 @@ const AdminPanel = ({ onLogout }) => {
       payload.costo_aseo = formData.costo_aseo;
       payload.galeria = formData.imagenes;
     }
-
-    const { error } = await supabase.from(table).upsert([{
-      ...(editingId ? { id: editingId } : {}),
-      ...payload
-    }]);
-
+    const { error } = await supabase.from(table).upsert([{ ...(editingId ? { id: editingId } : {}), ...payload }]);
     if (!error) {
       setIsModalOpen(false);
       fetchData();
@@ -135,276 +129,208 @@ const AdminPanel = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans pb-24 md:pb-0">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col md:flex-row font-sans pb-24 md:pb-0">
 
       {/* --- SIDEBAR DESKTOP --- */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col p-6 h-screen sticky top-0 hidden md:flex">
-        <div className="mb-10 text-center">
-          <span className="font-black text-2xl tracking-tighter text-blue-900 italic uppercase">Admin Panel</span>
+      <aside className="w-72 bg-[#0f172a] text-white flex flex-col h-screen sticky top-0 hidden md:flex shadow-2xl">
+        <div className="p-8 mb-4 text-center">
+          <span className="font-black text-2xl tracking-tighter text-blue-400 italic uppercase">ADMIN<span className="text-white">PANEL</span></span>
         </div>
-        <nav className="flex flex-col gap-3 flex-1">
-          <button onClick={() => setActiveTab('properties')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'properties' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+        <nav className="flex flex-col gap-2 px-4 flex-1">
+          <button onClick={() => setActiveTab('properties')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all duration-300 ${activeTab === 'properties' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
             <LayoutGrid size={20} /> Alquileres
           </button>
-          <button onClick={() => setActiveTab('sales')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'sales' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+          <button onClick={() => setActiveTab('sales')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all duration-300 ${activeTab === 'sales' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
             <Tag size={20} /> Ventas
           </button>
-          <button onClick={() => setActiveTab('reservations')} className={`flex items-center gap-3 p-4 rounded-2xl font-bold transition ${activeTab === 'reservations' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
+          <button onClick={() => setActiveTab('reservations')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all duration-300 ${activeTab === 'reservations' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
             <Bell size={20} /> Reservas
           </button>
         </nav>
-        <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 font-bold p-4 hover:bg-red-50 rounded-2xl transition mt-auto w-full">
-          <LogOut size={20} /> Salir
-        </button>
+        <div className="p-4 border-t border-slate-800">
+          <button onClick={handleLogout} className="flex items-center gap-3 text-slate-400 font-bold p-4 hover:text-red-400 transition-all w-full">
+            <LogOut size={20} /> Salir
+          </button>
+        </div>
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 mt-4 md:mt-0">
-          <h2 className="text-2xl md:text-3xl font-black uppercase text-slate-800 tracking-tight italic">
-            {activeTab === 'properties' ? "Gestión Alquileres" : activeTab === 'sales' ? "Gestión Ventas" : "Centro de Reservas"}
-          </h2>
-
-          {activeTab !== 'reservations' && (
-            <button
-              onClick={() => { setFormData(initialForm); setEditingId(null); setIsModalOpen(true); }}
-              className="w-full md:w-auto bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-600 transition shadow-xl uppercase tracking-widest text-xs active:scale-95"
-            >
-              <Plus size={20} /> Añadir Propiedad
-            </button>
-          )}
+      <main className="flex-1 overflow-y-auto">
+        {/* Header Superior Desktop */}
+        <header className="h-20 bg-white border-b border-slate-200 hidden md:flex items-center justify-between px-8 sticky top-0 z-50">
+          <div className="flex items-center bg-slate-100 px-4 py-2 rounded-xl w-96 border border-slate-200">
+            <Search size={18} className="text-slate-400" />
+            <input type="text" placeholder="Buscar..." className="bg-transparent border-none outline-none ml-3 text-sm w-full" />
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-lg border border-slate-200">
+              <button className="px-3 py-1 text-xs font-bold bg-white shadow-sm rounded-md text-blue-600">ES</button>
+              <button className="px-3 py-1 text-xs font-bold text-slate-400">EN</button>
+            </div>
+          </div>
         </header>
 
-        {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
-        ) : activeTab === 'reservations' ? (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[800px]">
-                <thead className="bg-slate-50 border-b border-slate-100">
+        <div className="p-4 md:p-10">
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10">
+            <div>
+              <h2 className="text-3xl font-black uppercase text-slate-900 tracking-tight italic">
+                {activeTab === 'properties' ? "Alquileres" : activeTab === 'sales' ? "Ventas" : "Reservas"}
+              </h2>
+              <p className="text-slate-500 font-medium mt-1 uppercase text-[10px] tracking-widest">Gestión de inventario activo</p>
+            </div>
+
+            {activeTab !== 'reservations' && (
+              <button
+                onClick={() => { setFormData(initialForm); setEditingId(null); setIsModalOpen(true); }}
+                className="w-full md:w-auto bg-[#0f172a] text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition-all shadow-xl active:scale-95 uppercase tracking-wider text-xs"
+              >
+                <Plus size={20} /> Añadir Propiedad
+              </button>
+            )}
+          </header>
+
+          {loading ? (
+            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
+          ) : activeTab === 'reservations' ? (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <table className="w-full border-collapse min-w-[700px]">
+                <thead className="bg-slate-50 border-b border-slate-200 uppercase text-[10px] font-black text-slate-500 tracking-widest">
                   <tr>
-                    <th className="p-5 text-left text-[10px] font-black uppercase text-slate-400">Cliente / Propiedad</th>
-                    <th className="p-5 text-center text-[10px] font-black uppercase text-slate-400">Fechas</th>
-                    <th className="p-5 text-center text-[10px] font-black uppercase text-slate-400">Total Pago</th>
-                    <th className="p-5 text-center text-[10px] font-black uppercase text-slate-400">Estado</th>
-                    <th className="p-5 text-right text-[10px] font-black uppercase text-slate-400">Acciones</th>
+                    <th className="p-5 text-left">Cliente</th>
+                    <th className="p-5 text-center">Fechas</th>
+                    <th className="p-5 text-center">Pago</th>
+                    <th className="p-5 text-center">Estado</th>
+                    <th className="p-5 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-sm">
                   {reservations.map(res => (
-                    <tr key={res.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                    <tr key={res.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                       <td className="p-5">
-                        <div className="flex flex-col">
-                          <span className="font-black text-slate-800 text-sm uppercase">{res.nombre_cliente}</span>
-                          <span className="text-[10px] text-blue-600 font-bold uppercase">{res.propiedad_titulo}</span>
-                        </div>
+                        <div className="font-bold text-slate-800 uppercase">{res.nombre_cliente}</div>
+                        <div className="text-[10px] text-blue-600 font-bold">{res.propiedad_titulo}</div>
                       </td>
-                      <td className="p-5 text-center font-bold text-xs text-slate-500">
-                        {res.fecha_inicio} <br /> <span className="text-[9px] text-slate-300 italic">al</span> <br /> {res.fecha_fin}
-                      </td>
-                      <td className="p-5 text-center font-black text-indigo-600">{formatCOP(res.precio_total)}</td>
+                      <td className="p-5 text-center font-medium">{res.fecha_inicio} <span className="text-slate-300">|</span> {res.fecha_fin}</td>
+                      <td className="p-5 text-center font-black">{formatCOP(res.precio_total)}</td>
                       <td className="p-5 text-center">
-                        <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${res.estado === 'confirmada' ? 'bg-green-100 text-green-600' :
-                          res.estado === 'cancelada' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
-                          }`}>
+                        <span className={`px-3 py-1 rounded-md text-[9px] font-black uppercase ${res.estado === 'confirmada' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                           {res.estado || 'pendiente'}
                         </span>
                       </td>
                       <td className="p-5 text-right flex justify-end gap-2">
-                        {res.estado !== 'confirmada' && res.estado !== 'cancelada' && (
-                          <button onClick={async () => { await supabase.from('reservas').update({ estado: 'confirmada' }).eq('id', res.id); fetchData(); }} className="p-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition"><CheckCircle size={18} /></button>
-                        )}
-                        {res.estado !== 'cancelada' && (
-                          <button onClick={async () => { if (window.confirm("¿Cancelar reserva y liberar fechas?")) { await supabase.from('reservas').update({ estado: 'cancelada' }).eq('id', res.id); fetchData(); } }} className="p-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition"><X size={18} /></button>
-                        )}
-                        <button onClick={async () => { if (window.confirm("¿Eliminar registro?")) { await supabase.from('reservas').delete().eq('id', res.id); fetchData(); } }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition"><Trash2 size={18} /></button>
+                        <button onClick={async () => { if (window.confirm("¿Eliminar?")) { await supabase.from('reservas').delete().eq('id', res.id); fetchData(); } }} className="text-slate-400 hover:text-red-500"><Trash2 size={18} /></button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : (
-          /* --- GRILLA DE PROPIEDADES MEJORADA --- */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(activeTab === 'properties' ? properties : sales).map(item => {
-              const currentImgs = item.imagenes || item.galeria || [];
-              return (
-                <div key={item.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-                  <div className="h-48 bg-slate-100 relative overflow-hidden flex items-center justify-center">
-                    {currentImgs.length > 0 ? (
-                      <img src={currentImgs[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
-                    ) : (
-                      <div className="flex flex-col items-center text-slate-300">
-                        <LayoutGrid size={48} strokeWidth={1} />
-                        <span className="text-[10px] font-black uppercase mt-2 tracking-widest">Sin imagen</span>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(activeTab === 'properties' ? properties : sales).map(item => {
+                const currentImgs = item.imagenes || item.galeria || [];
+                return (
+                  <div key={item.id} className="group bg-white rounded-xl border border-slate-200/60 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col">
+                    <div className="h-56 bg-slate-100 relative overflow-hidden">
+                      <img src={currentImgs[0] || ""} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/20">
+                        {activeTab === 'properties' ? 'Alquiler' : 'Venta'}
                       </div>
-                    )}
-                    {/* INDICADOR DE VIDEO */}
-                    {item.video_url && (
-                      <div className="absolute top-4 right-4 bg-red-600 text-white p-2 rounded-full shadow-xl">
-                        <Video size={14} />
+                      {item.video_url && (
+                        <div className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-md text-white p-2 rounded-lg"><Play size={14} fill="currentColor" /></div>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h4 className="font-bold text-slate-800 text-lg truncate group-hover:text-blue-600 transition-colors">{item.titulo}</h4>
+                      <div className="flex items-center gap-1.5 mt-2 text-slate-500 mb-6">
+                        <MapPin size={14} className="text-blue-500" />
+                        <span className="text-xs font-medium truncate">{item.ubicacion}</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-black text-lg text-slate-800 truncate">{item.titulo}</h4>
-                    <p className="text-xs text-slate-400 flex items-center gap-1 mb-4 italic"><MapPin size={12} /> {item.ubicacion}</p>
-                    <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-                      <p className="font-black text-blue-900 text-sm">
-                        {formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}
-                      </p>
-                      <div className="flex gap-2">
-                        <button onClick={() => {
-                          setFormData({
-                            ...item,
-                            imagenes: item.imagenes || item.galeria || [],
-                            video_url: item.video_url || '',
-                            descripcion: item.descripcion || ''
-                          });
-                          setEditingId(item.id);
-                          setIsModalOpen(true);
-                        }} className="p-2 bg-white text-blue-600 rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition"><Edit size={16} /></button>
-                        <button onClick={async () => { if (window.confirm("¿Eliminar propiedad permanentemente?")) { await supabase.from(activeTab === 'sales' ? 'ventas_propiedades' : 'alojamientos').delete().eq('id', item.id); fetchData(); } }} className="p-2 bg-white text-red-500 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition"><Trash2 size={16} /></button>
+                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] uppercase text-slate-400 font-black">Base</span>
+                          <span className="font-black text-slate-900 text-lg tracking-tight">
+                            {formatCOP(activeTab === 'properties' ? (item.precio_temporada_baja || item.precio_noche) : item.precio_cop)}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setFormData({ ...item, imagenes: item.imagenes || item.galeria || [], video_url: item.video_url || '', descripcion: item.descripcion || '' }); setEditingId(item.id); setIsModalOpen(true); }} className="p-2.5 bg-slate-50 text-slate-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"><Edit size={18} /></button>
+                          <button onClick={async () => { if (window.confirm("¿Eliminar?")) { await supabase.from(activeTab === 'sales' ? 'ventas_propiedades' : 'alojamientos').delete().eq('id', item.id); fetchData(); } }} className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-600 transition-all shadow-sm"><Trash2 size={18} /></button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* --- MENU MÓVIL --- */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-3 flex justify-around items-center z-[100] shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        <button onClick={() => setActiveTab('properties')} className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === 'properties' ? 'text-blue-600' : 'text-slate-400'}`}>
-          <LayoutGrid size={22} /> <span className="text-[9px] font-black uppercase tracking-tighter">Alquiler</span>
+      {/* --- MENU MÓVIL ESTILO DARK (IGUAL AL SIDEBAR) --- */}
+      <nav className="md:hidden fixed bottom-6 left-6 right-6 bg-[#0f172a] border border-slate-800 px-4 py-4 rounded-2xl flex justify-around items-center z-[100] shadow-2xl">
+        <button onClick={() => setActiveTab('properties')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'properties' ? 'text-blue-400 scale-110' : 'text-slate-500'}`}>
+          <LayoutGrid size={20} /> <span className="text-[8px] font-black uppercase">Alquiler</span>
         </button>
-        <button onClick={() => setActiveTab('sales')} className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === 'sales' ? 'text-blue-600' : 'text-slate-400'}`}>
-          <Tag size={22} /> <span className="text-[9px] font-black uppercase tracking-tighter">Ventas</span>
+        <button onClick={() => setActiveTab('sales')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'sales' ? 'text-blue-400 scale-110' : 'text-slate-500'}`}>
+          <Tag size={20} /> <span className="text-[8px] font-black uppercase">Ventas</span>
         </button>
-        <button onClick={() => setActiveTab('reservations')} className={`flex flex-col items-center gap-1 flex-1 transition-all ${activeTab === 'reservations' ? 'text-blue-600' : 'text-slate-400'}`}>
-          <Bell size={22} /> <span className="text-[9px] font-black uppercase tracking-tighter">Reservas</span>
+        <button onClick={() => setActiveTab('reservations')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'reservations' ? 'text-blue-400 scale-110' : 'text-slate-500'}`}>
+          <Bell size={20} /> <span className="text-[8px] font-black uppercase">Reservas</span>
         </button>
-        <button onClick={handleLogout} className="flex flex-col items-center gap-1 flex-1 text-red-400">
-          <LogOut size={22} /> <span className="text-[9px] font-black uppercase tracking-tighter">Salir</span>
+        <div className="w-[1px] h-6 bg-slate-800 mx-2"></div>
+        <button onClick={handleLogout} className="text-red-400">
+          <LogOut size={20} />
         </button>
       </nav>
 
-      {/* --- MODAL DE CREACIÓN/EDICIÓN --- */}
+      {/* --- MODAL --- */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] flex items-center justify-center p-2 md:p-4">
-          <form onSubmit={saveEntry} className="bg-white p-6 md:p-10 rounded-[2.5rem] w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-red-50 text-slate-500 rounded-full transition"><X size={20} /></button>
-
-            <h3 className="font-black text-xl md:text-2xl mb-8 uppercase italic text-blue-900 pr-10">
-              {editingId ? "Actualizar" : "Nueva"} {activeTab === 'properties' ? "Propiedad Alquiler" : "Propiedad Venta"}
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <form onSubmit={saveEntry} className="bg-white p-6 md:p-10 rounded-xl w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-red-50 text-slate-500 rounded-full transition-all"><X size={20} /></button>
+            <h3 className="font-black text-2xl mb-8 uppercase text-slate-900 border-b pb-4">
+              {editingId ? "Editar" : "Nueva"} {activeTab === 'properties' ? "Propiedad" : "Venta"}
             </h3>
-
-            <div className="space-y-8">
-              {/* Imágenes */}
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-400 mb-4 ml-1 tracking-widest">Galería Fotográfica</label>
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-                  <label className="border-2 border-dashed border-slate-200 rounded-2xl h-24 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition">
-                    {uploading ? <Loader2 className="animate-spin text-blue-600" /> : <Upload size={24} className="text-slate-400" />}
-                    <input type="file" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                  </label>
-                  {formData.imagenes?.map((img, i) => (
-                    <div key={i} className="relative h-24 rounded-2xl overflow-hidden group border border-slate-100">
-                      <img src={img} className="w-full h-full object-cover" alt="" />
-                      <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center transition opacity-0 group-hover:opacity-100"><Trash2 size={18} /></button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* URL Video + PREVIEW */}
-              <div className="bg-slate-50 p-6 rounded-3xl border border-blue-50">
-                <div className="flex items-center gap-2 mb-4">
-                  <Video size={18} className="text-blue-600" />
-                  <label className="text-[10px] font-black uppercase text-slate-500">Video Recorrido (YouTube Link)</label>
-                </div>
-                <input
-                  type="url"
-                  className="input-admin mb-4"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  value={formData.video_url || ''}
-                  onChange={e => setFormData({ ...formData, video_url: e.target.value })}
-                />
-
-                {/* PREVIEW DEL VIDEO DENTRO DEL MODAL */}
-                {getEmbedUrl(formData.video_url) && (
-                  <div className="rounded-2xl overflow-hidden aspect-video shadow-lg bg-black">
-                    <iframe
-                      className="w-full h-full"
-                      src={getEmbedUrl(formData.video_url)}
-                      title="Preview"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 mb-3 block tracking-widest">Galería</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <label className="border-2 border-dashed border-slate-200 rounded-xl h-24 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition-all group">
+                      {uploading ? <Loader2 className="animate-spin text-blue-600" /> : <Upload size={24} className="text-slate-400 group-hover:text-blue-600" />}
+                      <input type="file" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                    </label>
+                    {formData.imagenes?.map((img, i) => (
+                      <div key={i} className="relative h-24 rounded-xl overflow-hidden group border border-slate-100 shadow-sm">
+                        <img src={img} className="w-full h-full object-cover" alt="" />
+                        <button type="button" onClick={() => removeImage(i)} className="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={18} /></button>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+                <input type="url" className="input-admin" placeholder="Video URL" value={formData.video_url || ''} onChange={e => setFormData({ ...formData, video_url: e.target.value })} />
               </div>
-
-              {/* Inputs Generales */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required className="input-admin" placeholder="Título Comercial" value={formData.titulo || ''} onChange={e => setFormData({ ...formData, titulo: e.target.value })} />
-                <input required className="input-admin" placeholder="Ubicación / Dirección" value={formData.ubicacion || ''} onChange={e => setFormData({ ...formData, ubicacion: e.target.value })} />
-
-                {activeTab === 'sales' ? (
-                  <>
-                    <input type="number" className="input-admin" placeholder="Precio COP" value={formData.precio_cop || ''} onChange={e => setFormData({ ...formData, precio_cop: e.target.value })} />
-                    <input type="number" className="input-admin" placeholder="Precio USD (Opcional)" value={formData.precio_usd || ''} onChange={e => setFormData({ ...formData, precio_usd: e.target.value })} />
-                  </>
-                ) : (
-                  <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase text-blue-600 ml-1">T. Baja</label>
-                      <input type="number" className="input-admin" value={formData.precio_temporada_baja || ''} onChange={e => setFormData({ ...formData, precio_temporada_baja: e.target.value })} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase text-red-500 ml-1">T. Alta</label>
-                      <input type="number" className="input-admin" value={formData.precio_alta || ''} onChange={e => setFormData({ ...formData, precio_alta: e.target.value })} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase text-green-600 ml-1">Aseo</label>
-                      <input type="number" className="input-admin" value={formData.costo_aseo || ''} onChange={e => setFormData({ ...formData, costo_aseo: e.target.value })} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase text-indigo-600 ml-1">Manilla</label>
-                      <input type="number" className="input-admin" value={formData.costo_manilla || ''} onChange={e => setFormData({ ...formData, costo_manilla: e.target.value })} />
-                    </div>
-                  </div>
-                )}
-
-                <div className="md:col-span-2">
-                  <textarea className="input-admin min-h-[120px] pt-4" placeholder="Descripción detallada de la propiedad..." value={formData.descripcion || ''} onChange={e => setFormData({ ...formData, descripcion: e.target.value })} />
+              <div className="space-y-4">
+                <input required className="input-admin" placeholder="Título" value={formData.titulo || ''} onChange={e => setFormData({ ...formData, titulo: e.target.value })} />
+                <input required className="input-admin" placeholder="Ubicación" value={formData.ubicacion || ''} onChange={e => setFormData({ ...formData, ubicacion: e.target.value })} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="number" className="input-admin" placeholder="Precio Base" value={activeTab === 'sales' ? formData.precio_cop : formData.precio_temporada_baja} onChange={e => activeTab === 'sales' ? setFormData({ ...formData, precio_cop: e.target.value }) : setFormData({ ...formData, precio_temporada_baja: e.target.value })} />
+                  <input type="number" className="input-admin" placeholder="Habitaciones" value={formData.habitaciones || ''} onChange={e => setFormData({ ...formData, habitaciones: e.target.value })} />
                 </div>
-
-                <div className="grid grid-cols-3 gap-3 md:col-span-2">
-                  <input type="number" className="input-admin" placeholder="m²" value={formData.metros_cuadrados || ''} onChange={e => setFormData({ ...formData, metros_cuadrados: e.target.value })} />
-                  <input type="number" className="input-admin" placeholder="Hab" value={formData.habitaciones || ''} onChange={e => setFormData({ ...formData, habitaciones: e.target.value })} />
-                  <input type="number" className="input-admin" placeholder="Baños" value={formData.banos || ''} onChange={e => setFormData({ ...formData, banos: e.target.value })} />
-                </div>
+                <textarea className="input-admin min-h-[100px] pt-3" placeholder="Descripción..." value={formData.descripcion || ''} onChange={e => setFormData({ ...formData, descripcion: e.target.value })} />
               </div>
             </div>
-
-            <button type="submit" className="w-full mt-10 py-5 bg-blue-600 text-white rounded-[2rem] font-black hover:bg-slate-900 transition-all shadow-2xl uppercase tracking-widest active:scale-95">
-              {editingId ? "Actualizar Registro" : "Publicar Propiedad"}
+            <button type="submit" className="w-full mt-10 py-5 bg-[#0f172a] text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-xl uppercase tracking-widest text-sm active:scale-95">
+              {editingId ? "Actualizar Registro" : "Publicar"}
             </button>
           </form>
         </div>
       )}
 
       <style>{`
-        .input-admin { padding: 0.9rem 1.2rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 1.2rem; font-weight: 500; outline: none; width: 100%; transition: all 0.2s; font-size: 14px; }
-        .input-admin:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .input-admin { padding: 0.8rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-weight: 500; outline: none; width: 100%; transition: all 0.3s; font-size: 14px; color: #1e293b; }
+        .input-admin:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
       `}</style>
     </div>
   );

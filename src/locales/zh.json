@@ -8,7 +8,8 @@
     "language": "语言",
     "back_home": "返回首页",
     "back": "返回",
-    "consult": "咨询"
+    "consult": "咨询",
+    "price": "费用"
   },
   "navbar": {
     "logout": "注销",
@@ -312,5 +313,23 @@
     "rent_only": "仅限出租",
     "rent_or_sale": "出租/出售",
     "where_placeholder": "你在哪里看？"
+  },
+  "admin": {
+    "btn_back": "返回面板",
+    "btn_cancel": "取消",
+    "btn_publish": "立即发布",
+    "create_subtitle": "填写详细信息以在独家目​​录中发布您的空间。",
+    "create_title": "新楼盘",
+    "label_address": "地理位置",
+    "label_capacity": "最大容量",
+    "label_description": "财产叙事",
+    "label_name": "物业名称",
+    "label_number": "房间标识符",
+    "label_price": "每晚房价",
+    "ph_address": "完整地址、城市和部门",
+    "ph_description": "描述一下这个地方的独特之处...",
+    "ph_name": "前任。宁静别墅或皇家套房",
+    "photos_label": "图片库",
+    "upload_btn": "添加照片"
   }
 }

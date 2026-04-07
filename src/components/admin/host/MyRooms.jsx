@@ -1,11 +1,10 @@
 import React from 'react';
-import { Plus, Search, MoreVertical, BedDouble, User, DollarSign } from 'lucide-react';
+import { Plus, Search, MoreVertical, BedDouble, User, DollarSign, Filter, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
 
-const MyRooms = () => {
+const MyRooms = ({ onAddNew }) => {
     const { t } = useLanguage();
 
-    // DATOS DE EJEMPLO (Se mantienen igual, pero los labels se traducen en el render)
     const habitaciones = [
         { id: 1, nombre: 'Apartamento 101', tipo: 'Suite', precio: 150000, estado: 'disponible', capacidad: 4 },
         { id: 2, nombre: 'Cabaña del Mar', tipo: 'Cabaña', precio: 250000, estado: 'ocupado', capacidad: 6 },
@@ -14,89 +13,115 @@ const MyRooms = () => {
 
     const getStatusColor = (estado) => {
         switch (estado) {
-            case 'disponible': return 'bg-green-100 text-green-700 border-green-200';
-            case 'ocupado': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'mantenimiento': return 'bg-orange-100 text-orange-700 border-orange-200';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'disponible': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'ocupado': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'mantenimiento': return 'bg-amber-50 text-amber-700 border-amber-100';
+            default: return 'bg-slate-50 text-slate-400';
         }
     };
 
     return (
-        <div className="p-4 sm:p-0">
+        <div className="px-4 py-6 sm:px-0 bg-[#f8f7f2] min-h-screen animate-in fade-in duration-700">
 
-            {/* Cabecera de la sección */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            {/* HEADER SUPERIOR */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{t('myRooms.title')}</h2>
-                    <p className="text-gray-500 text-sm">{t('myRooms.subtitle')}</p>
+                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 italic uppercase tracking-tighter">
+                        {t('myRooms.title')}
+                    </h2>
+                    <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.2em] mt-2 italic opacity-70">
+                        {t('myRooms.subtitle')}
+                    </p>
                 </div>
-                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm transition-all hover:scale-105 active:scale-95">
-                    <Plus size={20} />
-                    <span>{t('myRooms.btn_new')}</span>
+                <button
+                    onClick={onAddNew}
+                    className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-700 transition-all shadow-2xl shadow-slate-200 active:scale-95"
+                >
+                    <Plus size={18} />
+                    {t('myRooms.btn_new')}
                 </button>
             </div>
 
-            {/* Barra de Filtros */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            {/* BARRA DE BÚSQUEDA Y FILTROS */}
+            <div className="flex flex-col md:flex-row gap-4 mb-10">
+                <div className="relative flex-1 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors" size={18} />
                     <input
                         type="text"
                         placeholder={t('myRooms.search_placeholder')}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all font-medium text-slate-900 shadow-sm"
                     />
                 </div>
-                <select className="border border-gray-200 rounded-lg px-4 py-2 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option>{t('myRooms.filter_all')}</option>
-                    <option>{t('myRooms.status_disponible')}</option>
-                    <option>{t('myRooms.status_ocupado')}</option>
-                    <option>{t('myRooms.status_mantenimiento')}</option>
-                </select>
+                <div className="relative">
+                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <select className="appearance-none pl-10 pr-10 py-4 bg-white border border-slate-100 rounded-2xl focus:outline-none focus:border-slate-900 font-black uppercase text-[10px] tracking-widest text-slate-600 cursor-pointer shadow-sm">
+                        <option>{t('myRooms.filter_all')}</option>
+                        <option>{t('myRooms.status_disponible')}</option>
+                        <option>{t('myRooms.status_ocupado')}</option>
+                        <option>{t('myRooms.status_mantenimiento')}</option>
+                    </select>
+                </div>
             </div>
 
-            {/* Lista de Habitaciones */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* GRID DE HABITACIONES */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {habitaciones.map((room) => (
-                    <div key={room.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5 relative group">
+                    <div key={room.id} className="group bg-white rounded-[2.5rem] border border-slate-100 p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200 hover:-translate-y-2 relative overflow-hidden">
 
-                        <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
+                        {/* Menú de opciones */}
+                        <button className="absolute top-6 right-6 text-slate-300 hover:text-slate-900 transition-colors">
                             <MoreVertical size={20} />
                         </button>
 
-                        <div className="flex items-start gap-4 mb-4">
-                            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                        {/* Icono y Titulo */}
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-14 h-14 bg-[#f8f7f2] rounded-2xl flex items-center justify-center text-slate-900 border border-slate-50 group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
                                 <BedDouble size={24} />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">{room.nombre}</h3>
-                                <p className="text-sm text-gray-500">{room.tipo}</p>
+                                <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg italic">{room.nombre}</h3>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{room.tipo}</p>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between mb-4">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusColor(room.estado)} uppercase tracking-wider`}>
+                        {/* Status y Precio */}
+                        <div className="flex items-center justify-between mb-8 bg-[#fcfcfb] p-4 rounded-2xl border border-slate-50">
+                            <span className={`px-3 py-1.5 rounded-full text-[9px] font-black border ${getStatusColor(room.estado)} uppercase tracking-[0.15em]`}>
                                 {t(`myRooms.status_${room.estado}`)}
                             </span>
-                            <div className="flex items-center text-gray-600 text-sm font-medium">
-                                <DollarSign size={16} />
-                                {room.precio.toLocaleString()} <span className="text-gray-400 font-normal ml-1">/{t('common.night')}</span>
+                            <div className="text-right">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('common.price')}</p>
+                                <p className="text-lg font-black text-slate-900 tracking-tighter">
+                                    ${room.precio.toLocaleString()}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
+                        {/* Footer de la Card */}
+                        <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                            <div className="flex items-center gap-2 text-slate-400">
                                 <User size={16} />
-                                <span>{t('myRooms.max_cap').replace('{num}', room.capacidad)}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-tight">
+                                    {t('myRooms.max_cap').replace('{num}', room.capacidad)}
+                                </span>
                             </div>
-                            <button className="text-blue-600 font-medium hover:underline">{t('myRooms.btn_edit')}</button>
+                            <button className="flex items-center gap-1 text-slate-900 font-black uppercase text-[10px] tracking-widest group-hover:text-blue-600 transition-colors">
+                                {t('myRooms.btn_edit')}
+                                <ArrowUpRight size={14} />
+                            </button>
                         </div>
                     </div>
                 ))}
 
-                {/* Botón visual "Agregar" */}
-                <button className="border-2 border-dashed border-gray-300 rounded-xl p-5 flex flex-col items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all min-h-[180px]">
-                    <Plus size={32} className="mb-2" />
-                    <span className="font-medium">{t('myRooms.add_another')}</span>
+                {/* BOTÓN "AGREGAR OTRA" (Placeholder) */}
+                <button
+                    onClick={onAddNew}
+                    className="group border-2 border-dashed border-slate-200 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-slate-300 hover:border-slate-900 hover:text-slate-900 hover:bg-white transition-all duration-500 min-h-[300px]"
+                >
+                    <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                        <Plus size={32} />
+                    </div>
+                    <span className="font-black uppercase text-[10px] tracking-[0.2em]">{t('myRooms.add_another')}</span>
                 </button>
             </div>
         </div>

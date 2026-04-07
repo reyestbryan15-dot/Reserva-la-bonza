@@ -8,7 +8,8 @@
     "language": "Sprache",
     "back_home": "Zur Startseite",
     "back": "Zurückkehren",
-    "consult": "Konsultieren"
+    "consult": "Konsultieren",
+    "price": "Gebühr"
   },
   "navbar": {
     "logout": "Abmelden",
@@ -217,8 +218,8 @@
     "legal_full_description": "Reservas La Bonanza SAS ist ein Reiseveranstalter mit der Steuernummer (NIT) 901593475-7, registriert unter der RNT 114606 beim Ministerium für Industrie- und Handelsentwicklung, eingetragen bei der Handelskammer von Santa Marta unter der Nummer 254869. Wir erfüllen alle gesetzlichen Anforderungen mit nationalem und internationalem Tätigkeitsbereich."
   },
   "reservation": {
-    "whatsapp": "",
-    "your_data": "",
+    "whatsapp": "WhatsApp",
+    "your_data": "Ihre Daten",
     "addons": "Zusätzlich",
     "airport_taxi": "Flughafentaxi",
     "alert_save_error": "Fehler beim Speichern:",
@@ -240,9 +241,9 @@
     "taxi": "Taxi"
   },
   "search": {
-    "area_label": "",
-    "category": "",
-    "for_sale": "",
+    "area_label": "Sektor/Zone",
+    "category": "Kategorie",
+    "for_sale": "Im Angebot",
     "min_capacity": "Mindestkapazität",
     "person_plural": "Menschen",
     "person_singular": "Person",
@@ -312,5 +313,23 @@
     "subtitle": "Treten Sie noch heute unserer Community bei",
     "terms_link": "Nutzungsbedingungen",
     "title": "Benutzerkonto erstellen"
+  },
+  "admin": {
+    "btn_back": "Zurück zum Bedienfeld",
+    "btn_cancel": "Stornieren",
+    "btn_publish": "Jetzt veröffentlichen",
+    "create_subtitle": "Vervollständigen Sie die Angaben, um Ihren Raum im exklusiven Katalog zu veröffentlichen.",
+    "create_title": "Neue Immobilie",
+    "label_address": "Geografischer Standort",
+    "label_capacity": "Maximale Kapazität",
+    "label_description": "Immobilienerzählung",
+    "label_name": "Eigenschaftsname",
+    "label_number": "Raumkennung",
+    "label_price": "Preis pro Nacht",
+    "ph_address": "Vollständige Adresse, Stadt und Branche",
+    "ph_description": "Beschreiben Sie, was diesen Ort einzigartig macht ...",
+    "ph_name": "Ex. Villa Serenity oder Royal Suite",
+    "photos_label": "Bildergalerie",
+    "upload_btn": "Fotos hinzufügen"
   }
 }

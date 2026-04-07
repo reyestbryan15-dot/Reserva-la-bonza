@@ -8,7 +8,8 @@
         "language": "Idioma",
         "back_home": "Volver al Inicio",
         "consult": "Consultar",
-        "back": "Volver"
+        "back": "Volver",
+        "price": "Tarifa"
     },
     "navbar": {
         "logout": "Cerrar Sesión",
@@ -203,17 +204,17 @@
         "recommended_destinations": "Destinos recomendados"
     },
     "myRooms": {
-        "title": "Mis Habitaciones",
-        "subtitle": "Gestiona y organiza las unidades de tu propiedad",
-        "btn_new": "Nueva Habitación",
-        "search_placeholder": "Buscar por nombre o tipo...",
+        "title": "Inventario de Espacios",
+        "subtitle": "Gestión activa de tus propiedades y disponibilidad real.",
+        "btn_new": "Registrar Propiedad",
+        "search_placeholder": "Buscar por nombre o identificador...",
         "filter_all": "Todos los estados",
         "status_disponible": "Disponible",
         "status_ocupado": "Ocupado",
         "status_mantenimiento": "En Mantenimiento",
-        "max_cap": "{num} personas máx.",
-        "btn_edit": "Editar unidad",
-        "add_another": "Agregar otra unidad"
+        "max_cap": "{num} Personas",
+        "btn_edit": "Gestionar",
+        "add_another": "Añadir Nueva Unidad"
     },
     "hostLayout": {
         "host_panel": "Panel de Anfitrión",
@@ -310,5 +311,23 @@
         "legal_label": "LEGALIDAD",
         "legal_title": "LEGALIDAD",
         "legal_full_description": "Reservas La Bonanza SAS, es una agencia operadora turística identificada con el NIT 901593475-7, registrada bajo el RNT 114606 del Ministerio de Desarrollo de Industria y Comercio, matriculada en la Cámara de Comercio de Santa Marta bajo el Nro. 254869, cumplimos con todos los requisitos de Ley, con ámbito de operación Nacional e Internacional."
+    },
+    "admin": {
+        "create_title": "Nueva Propiedad",
+        "create_subtitle": "Completa los detalles para publicar tu espacio en el catálogo exclusivo.",
+        "btn_cancel": "Cancelar",
+        "btn_back": "Volver al Panel",
+        "btn_publish": "Publicar Ahora",
+        "photos_label": "Galería de Imágenes",
+        "upload_btn": "Añadir Fotos",
+        "label_name": "Nombre de la Propiedad",
+        "ph_name": "Ej. Villa Serenity o Suite Real",
+        "label_address": "Ubicación Geográfica",
+        "ph_address": "Dirección completa, ciudad y sector",
+        "label_number": "Identificador de Habitación",
+        "label_capacity": "Capacidad Máxima",
+        "label_price": "Tarifa por Noche",
+        "label_description": "Narrativa de la Propiedad",
+        "ph_description": "Describe qué hace único a este lugar..."
     }
 }

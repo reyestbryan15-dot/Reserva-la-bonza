@@ -8,7 +8,8 @@
     "language": "Langue",
     "back_home": "Retour à l'accueil",
     "back": "Retour",
-    "consult": "Consulter"
+    "consult": "Consulter",
+    "price": "Frais"
   },
   "navbar": {
     "logout": "Déconnexion",
@@ -312,5 +313,23 @@
     "and": "et",
     "of_brand": "de La Bonanza.",
     "btn_register": "Créer mon compte"
+  },
+  "admin": {
+    "btn_back": "Retour au panneau",
+    "btn_cancel": "Annuler",
+    "btn_publish": "Publier maintenant",
+    "create_subtitle": "Complétez les détails pour publier votre espace dans le catalogue exclusif.",
+    "create_title": "Nouvelle propriété",
+    "label_address": "Situation géographique",
+    "label_capacity": "Capacité maximale",
+    "label_description": "Récit de propriété",
+    "label_name": "Nom de la propriété",
+    "label_number": "Identifiant de la pièce",
+    "label_price": "Tarif par nuit",
+    "ph_address": "Adresse complète, ville et secteur",
+    "ph_description": "Décrivez ce qui rend ce lieu unique...",
+    "ph_name": "Ex. Villa Sérénité ou Suite Royale",
+    "photos_label": "Galerie d'images",
+    "upload_btn": "Ajouter des photos"
   }
 }
