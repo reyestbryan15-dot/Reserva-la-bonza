@@ -3,7 +3,7 @@ import { LayoutDashboard, BedDouble, CalendarDays, LogOut, Bell, User as UserIco
 import { useLanguage } from '../../../context/LanguageContext';
 
 // Importación de Componentes
-import HostDashboard from './HostDashboard';
+import HostDashboard from '../host/HostDashboard';
 import MyRooms from './MyRooms';
 import CreateRoomForm from './CreateRoomForm';
 

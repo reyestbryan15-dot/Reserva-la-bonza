@@ -119,3 +119,5 @@ const HostDashboard = ({ user, onChangeTab, realData = [] }) => {
     </div>
   );
 };
+
+export default HostDashboard;
