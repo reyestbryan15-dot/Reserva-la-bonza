@@ -8,13 +8,13 @@ const InventoryReservas = ({ items, refresh, loading }) => {
     // FUNCIÓN PARA ENVIAR EL CORREO
     const enviarEmailConfirmacion = async (reserva) => {
         const serviceId = 'service_zu8gjw7';
-        const templateId = 'TU_NUEVA_PLANTILLA_CONFIRMADA'; // <--- Crea una nueva para "Aprobado"
+        const templateId = 'template_zj8rdrk'; // <--- Crea una nueva para "Aprobado"
         const publicKey = 'dbV1Lgl8cAfjnfoTz';
 
         const templateParams = {
             nombre_cliente: reserva.nombre_cliente,
             // OJO: En tu tabla usas "email_cliente", asegúrate de que coincida
-            email_cliente: reserva.email_cliente || reserva.email,
+            email_cliente: reserva.email || reserva.email,
             propiedad_titulo: reserva.propiedad_titulo,
             fecha_reserva: `${reserva.fecha_inicio} al ${reserva.fecha_fin}`,
             reserva_id: reserva.id // Añadimos esto por si lo usas en la plantilla
