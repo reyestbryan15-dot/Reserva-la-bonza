@@ -27,12 +27,13 @@
         "contact_title": "Contacto",
         "chat_support": "Chat de Soporte",
         "always_open": "Atención 24/7",
-        "egal_title": "Legal",
+        "legal_title": "Legal",
         "about_us": "Sobre Nosotros",
         "terms": "Términos y Condiciones",
         "privacy": "Política de Privacidad",
         "rnt": "RNT (Registro Nacional)",
-        "rights": "Todos los derechos reservados."
+        "rights": "Todos los derechos reservados.",
+        "egal_title": "Legal"
     },
     "sales": {
         "title": "Portafolio de Ventas",
@@ -251,7 +252,7 @@
         "label_desc": "Descripción",
         "ph_title": "Título de la propiedad",
         "ph_location": "Ubicación (Ciudad, Sector)",
-        "ph_price_cop: ": "Precio en COP",
+        "ph_price_cop": "Precio en COP",
         "ph_price_usd": "Precio en USD",
         "ph_price_night": "Precio por noche",
         "ph_desc": "Describe los detalles de la propiedad...",
