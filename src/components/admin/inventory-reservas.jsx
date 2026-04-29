@@ -6,28 +6,26 @@ import emailjs from '@emailjs/browser';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const InventoryReservas = ({ items, refresh, loading }) => {
+// HEMOS AGREGADO = false PARA QUE SI NO RECIBE LA PROP, NO DE ERROR
+const InventoryReservas = ({ items = [], refresh = () => { }, loading = false }) => {
 
     // 2. FUNCIÓN PARA GENERAR EL PDF PROFESIONAL
     const generarFacturaPDF = (reserva) => {
         const doc = new jsPDF();
 
-        // Estilo de encabezado
         doc.setFontSize(20);
         doc.setTextColor(40);
         doc.text("CONFIRMACIÓN DE RESERVA", 105, 20, { align: "center" });
 
         doc.setFontSize(10);
-        doc.text(`Reserva ID: #RES-${reserva.id.slice(0, 8).toUpperCase()}`, 105, 28, { align: "center" });
+        doc.text(`Reserva ID: #RES-${reserva.id ? reserva.id.slice(0, 8).toUpperCase() : '000'}`, 105, 28, { align: "center" });
 
-        // Información de la empresa
         doc.setFont(undefined, 'bold');
         doc.text("Reserva La Bonanza", 15, 40);
         doc.setFont(undefined, 'normal');
         doc.text("Santa Marta, Colombia", 15, 45);
         doc.text("Email: labonanzar@gmail.com", 15, 50);
 
-        // Tabla de datos
         doc.autoTable({
             startY: 60,
             head: [['Detalle', 'Información']],
@@ -71,19 +69,17 @@ const InventoryReservas = ({ items, refresh, loading }) => {
 
         try {
             await emailjs.send(serviceId, templateId, templateParams, publicKey);
-            console.log("Correo enviado con éxito a: " + correoDestino);
+            console.log("Correo enviado con éxito");
         } catch (error) {
             console.error("Error al enviar el correo:", error);
         }
     };
 
-    // --- AQUÍ ESTABA EL ERROR (He quitado la palabra suelta) ---
     const handleAprobar = async (reserva) => {
         try {
             const pdfBlob = generarFacturaPDF(reserva);
             const fileName = `factura_${reserva.id}.pdf`;
 
-            // Subir a Supabase (Bucket: facturas)
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('facturas')
                 .upload(fileName, pdfBlob, {
@@ -116,13 +112,13 @@ const InventoryReservas = ({ items, refresh, loading }) => {
     };
 
     const handleEliminar = async (id) => {
-        if (window.confirm("¿Eliminar reserva permanentemente? Esto liberará las fechas.")) {
+        if (window.confirm("¿Eliminar reserva permanentemente?")) {
             const { error } = await supabase.from('reservas').delete().eq('id', id);
             if (!error) refresh();
         }
     };
 
-    // Si 'loading' te da error de "not defined", asegúrate de que el padre lo pase
+    // Si loading es undefined o null, ahora vale 'false' por defecto y no rompe
     if (loading) return <div className="p-10 text-center font-bold">Cargando reservas...</div>;
 
     return (
@@ -141,44 +137,50 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {items && items.map(res => (
-                            <tr key={res.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                                <td className="p-5">
-                                    <p className="font-bold text-slate-800 uppercase">{res.nombre_cliente}</p>
-                                    <p className="text-[10px] text-blue-600 font-bold">{res.propiedad_titulo}</p>
-                                    <p className="text-[9px] text-slate-400">{res.email}</p>
-                                </td>
-                                <td className="p-5 text-sm font-medium">
-                                    {res.fecha_inicio} al {res.fecha_fin}
-                                </td>
-                                <td className="p-5">
-                                    <span className={`px-3 py-1 rounded text-[9px] font-black uppercase ${res.estado === 'confirmada'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-amber-100 text-amber-700'
-                                        }`}>
-                                        {res.estado || 'pendiente'}
-                                    </span>
-                                </td>
-                                <td className="p-5 text-right flex justify-end gap-3">
-                                    {res.estado !== 'confirmada' && (
+                        {items && items.length > 0 ? (
+                            items.map(res => (
+                                <tr key={res.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                                    <td className="p-5">
+                                        <p className="font-bold text-slate-800 uppercase">{res.nombre_cliente}</p>
+                                        <p className="text-[10px] text-blue-600 font-bold">{res.propiedad_titulo}</p>
+                                        <p className="text-[9px] text-slate-400">{res.email}</p>
+                                    </td>
+                                    <td className="p-5 text-sm font-medium">
+                                        {res.fecha_inicio} al {res.fecha_fin}
+                                    </td>
+                                    <td className="p-5">
+                                        <span className={`px-3 py-1 rounded text-[9px] font-black uppercase ${res.estado === 'confirmada'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-amber-100 text-amber-700'
+                                            }`}>
+                                            {res.estado || 'pendiente'}
+                                        </span>
+                                    </td>
+                                    <td className="p-5 text-right flex justify-end gap-3">
+                                        {res.estado !== 'confirmada' && (
+                                            <button
+                                                onClick={() => handleAprobar(res)}
+                                                className="text-green-500 hover:scale-110 transition flex flex-col items-center gap-1"
+                                                title="Confirmar y enviar factura"
+                                            >
+                                                <CheckCircle size={20} />
+                                                <span className="text-[8px] font-bold">APROBAR</span>
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={() => handleAprobar(res)}
-                                            className="text-green-500 hover:scale-110 transition flex flex-col items-center gap-1"
-                                            title="Confirmar y enviar factura"
+                                            onClick={() => handleEliminar(res.id)}
+                                            className="text-slate-300 hover:text-red-500 transition"
                                         >
-                                            <CheckCircle size={20} />
-                                            <span className="text-[8px] font-bold">APROBAR</span>
+                                            <Trash2 size={20} />
                                         </button>
-                                    )}
-                                    <button
-                                        onClick={() => handleEliminar(res.id)}
-                                        className="text-slate-300 hover:text-red-500 transition"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
-                                </td>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="4" className="p-10 text-center text-slate-400">No hay reservas para mostrar.</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
