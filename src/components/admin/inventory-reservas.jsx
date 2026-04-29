@@ -1,35 +1,36 @@
 import React from 'react';
 import { supabase } from '../../../backend/supabaseClient';
-import { Trash2, CheckCircle, Mail } from 'lucide-react'; // Añadí Mail para un botón extra si quieres
+import { Trash2, CheckCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 const InventoryReservas = ({ items, refresh, loading }) => {
 
-    // FUNCIÓN PARA ENVIAR EL CORREO
+    // FUNCIÓN PARA ENVIAR EL CORREO DE CONFIRMACIÓN
     const enviarEmailConfirmacion = async (reserva) => {
         const serviceId = 'service_zu8gjw7';
-        const templateId = 'template_zj8rdrk'; // <--- Crea una nueva para "Aprobado"
+        const templateId = 'template_zj8rdrk';
         const publicKey = 'dbV1Lgl8cAfjnfoTz';
 
         const templateParams = {
             nombre_cliente: reserva.nombre_cliente,
-            // OJO: En tu tabla usas "email_cliente", asegúrate de que coincida
-            email_cliente: reserva.email || reserva.email,
+            // Usamos el nombre que definiste en EmailJS {{email_cliente}}
+            // y le pasamos el valor de la columna 'email' de tu base de datos
+            email_cliente: reserva.email,
             propiedad_titulo: reserva.propiedad_titulo,
             fecha_reserva: `${reserva.fecha_inicio} al ${reserva.fecha_fin}`,
-            reserva_id: reserva.id // Añadimos esto por si lo usas en la plantilla
+            reserva_id: reserva.id
         };
 
         try {
             await emailjs.send(serviceId, templateId, templateParams, publicKey);
-            console.log("Correo de confirmación enviado");
+            console.log("Correo de confirmación enviado con éxito");
         } catch (error) {
-            console.error("Error al enviar:", error);
+            console.error("Error al enviar el correo:", error);
         }
     };
 
     const handleAprobar = async (reserva) => {
-        // 1. Actualizar en Base de Datos
+        // 1. Actualizar en Base de Datos a 'confirmada'
         const { error } = await supabase
             .from('reservas')
             .update({ estado: 'confirmada' })
@@ -38,7 +39,7 @@ const InventoryReservas = ({ items, refresh, loading }) => {
         if (!error) {
             // 2. Si la DB se actualizó, disparamos el correo
             await enviarEmailConfirmacion(reserva);
-            alert("Reserva confirmada y correo enviado");
+            alert("¡Reserva confirmada! Las fechas se han bloqueado y el cliente ha sido notificado.");
             refresh();
         } else {
             alert("Error al actualizar: " + error.message);
@@ -46,7 +47,7 @@ const InventoryReservas = ({ items, refresh, loading }) => {
     };
 
     const handleEliminar = async (id) => {
-        if (window.confirm("¿Eliminar reserva permanentemente?")) {
+        if (window.confirm("¿Eliminar reserva permanentemente? Esto liberará las fechas.")) {
             const { error } = await supabase.from('reservas').delete().eq('id', id);
             if (!error) refresh();
         }
@@ -75,19 +76,24 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                                 <td className="p-5">
                                     <p className="font-bold text-slate-800 uppercase">{res.nombre_cliente}</p>
                                     <p className="text-[10px] text-blue-600 font-bold">{res.propiedad_titulo}</p>
-                                    {/* Muestra el email para estar seguro de que existe */}
-                                    <p className="text-[9px] text-slate-400">{res.email_cliente}</p>
+                                    {/* Cambiado a res.email para que coincida con tu lógica de DB */}
+                                    <p className="text-[9px] text-slate-400">{res.email}</p>
                                 </td>
-                                <td className="p-5 text-sm font-medium">{res.fecha_inicio} al {res.fecha_fin}</td>
+                                <td className="p-5 text-sm font-medium">
+                                    {res.fecha_inicio} al {res.fecha_fin}
+                                </td>
                                 <td className="p-5">
-                                    <span className={`px-3 py-1 rounded text-[9px] font-black uppercase ${res.estado === 'confirmada' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    <span className={`px-3 py-1 rounded text-[9px] font-black uppercase ${res.estado === 'confirmada'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-amber-100 text-amber-700'
+                                        }`}>
                                         {res.estado || 'pendiente'}
                                     </span>
                                 </td>
                                 <td className="p-5 text-right flex justify-end gap-3">
                                     {res.estado !== 'confirmada' && (
                                         <button
-                                            onClick={() => handleAprobar(res)} // Pasamos toda la 'res' para tener los datos del email
+                                            onClick={() => handleAprobar(res)}
                                             className="text-green-500 hover:scale-110 transition flex flex-col items-center gap-1"
                                             title="Confirmar y enviar correo"
                                         >
@@ -95,7 +101,12 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                                             <span className="text-[8px] font-bold">APROBAR</span>
                                         </button>
                                     )}
-                                    <button onClick={() => handleEliminar(res.id)} className="text-slate-300 hover:text-red-500 transition"><Trash2 size={20} /></button>
+                                    <button
+                                        onClick={() => handleEliminar(res.id)}
+                                        className="text-slate-300 hover:text-red-500 transition"
+                                    >
+                                        <Trash2 size={20} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}

@@ -3,6 +3,7 @@ import { Minus, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import DateRangeSelector from './DateRangeSelector';
+import { supabase } from '../../backend/supabaseClient';
 
 const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) => {
   const { t } = useLanguage();
@@ -35,16 +36,51 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
     }).format(val || 0);
   };
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!startDate || !endDate) {
       alert(t('booking.alert_select_dates'));
       return;
     }
+
+    // Formateamos las fechas a YYYY-MM-DD
     const checkinStr = startDate.toISOString().split('T')[0];
     const checkoutStr = endDate.toISOString().split('T')[0];
 
-    // Enviamos el precio base y las manillas por separado para que ReservationPage no se confunda
-    navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
+    try {
+      // Ajustamos la lógica: Una reserva choca si:
+      // (Inicio de la nueva es ANTES del fin de la existente) AND (Fin de la nueva es DESPUÉS del inicio de la existente)
+      const { data: conflictos, error } = await supabase
+        .from('reservas')
+        .select('estado')
+        .eq('propiedad_id', property.id)
+        // Usamos una sintaxis más limpia para evitar el error 400
+        .filter('fecha_llegada', 'lt', checkoutStr)
+        .filter('fecha_salida', 'gt', checkinStr);
+
+      if (error) throw error;
+
+      if (conflictos && conflictos.length > 0) {
+        const tieneConfirmada = conflictos.some(r => r.estado === 'confirmada');
+
+        if (tieneConfirmada) {
+          alert("❌ Estas fechas ya están confirmadas. Por favor selecciona otros días.");
+          return;
+        } else {
+          const continuar = window.confirm(
+            "⚠️ Hay una solicitud pendiente para estas fechas. ¿Deseas intentar continuar?"
+          );
+          if (!continuar) return;
+        }
+      }
+
+      navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
+
+    } catch (err) {
+      console.error("Error validando disponibilidad:", err);
+      // Si falla la red o hay error 400, al menos dejamos que intente reservar 
+      // pero avisamos que no se pudo verificar.
+      alert("No se pudo verificar la disponibilidad en tiempo real, pero intentaremos procesar tu solicitud.");
+    }
   };
 
   return (
