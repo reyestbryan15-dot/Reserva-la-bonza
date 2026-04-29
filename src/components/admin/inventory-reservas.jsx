@@ -2,47 +2,116 @@ import React from 'react';
 import { supabase } from '../../../backend/supabaseClient';
 import { Trash2, CheckCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+// 1. IMPORTAR LIBRERÍAS PARA PDF
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const InventoryReservas = ({ items, refresh, loading }) => {
 
-    // FUNCIÓN PARA ENVIAR EL CORREO DE CONFIRMACIÓN
-    const enviarEmailConfirmacion = async (reserva) => {
+    // 2. FUNCIÓN PARA GENERAR EL PDF PROFESIONAL
+    const generarFacturaPDF = (reserva) => {
+        const doc = new jsPDF();
+
+        // Estilo de encabezado
+        doc.setFontSize(20);
+        doc.setTextColor(40);
+        doc.text("CONFIRMACIÓN DE RESERVA", 105, 20, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.text(`Reserva ID: #RES-${reserva.id.slice(0, 8).toUpperCase()}`, 105, 28, { align: "center" });
+
+        // Información de la empresa
+        doc.setFont(undefined, 'bold');
+        doc.text("Reserva La Bonanza", 15, 40);
+        doc.setFont(undefined, 'normal');
+        doc.text("Santa Marta, Colombia", 15, 45);
+        doc.text("Email: labonanzar@gmail.com", 15, 50);
+
+        // Tabla de datos
+        doc.autoTable({
+            startY: 60,
+            head: [['Detalle', 'Información']],
+            body: [
+                ['Huésped', reserva.nombre_cliente || 'No especificado'],
+                ['Edificio / Propiedad', reserva.propiedad_titulo || 'No especificado'],
+                ['Fecha de Llegada', reserva.fecha_inicio || '---'],
+                ['Fecha de Salida', reserva.fecha_fin || '---'],
+                ['Estado de Pago', 'CONFIRMADO'],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [37, 99, 235] }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(9);
+        doc.text("Presente este documento al llegar al hotel/edificio para su ingreso.", 15, finalY);
+
+        return doc.output('blob');
+    };
+
+    // 3. FUNCIÓN PARA ENVIAR EL EMAIL
+    const enviarEmailConfirmacion = async (reserva, publicUrl) => {
         const serviceId = 'service_zu8gjw7';
         const templateId = 'template_zj8rdrk';
         const publicKey = 'dbV1Lgl8cAfjnfoTz';
 
+        const correoDestino = (reserva.email && reserva.email.includes('@'))
+            ? reserva.email
+            : 'labonanzar@gmail.com';
+
         const templateParams = {
             nombre_cliente: reserva.nombre_cliente,
-            // Usamos el nombre que definiste en EmailJS {{email_cliente}}
-            // y le pasamos el valor de la columna 'email' de tu base de datos
-            email_cliente: reserva.email,
+            email_cliente: correoDestino,
             propiedad_titulo: reserva.propiedad_titulo,
             fecha_reserva: `${reserva.fecha_inicio} al ${reserva.fecha_fin}`,
-            reserva_id: reserva.id
+            reserva_id: reserva.id,
+            link_factura: publicUrl,
+            admin_email: 'labonanzar@gmail.com'
         };
 
         try {
             await emailjs.send(serviceId, templateId, templateParams, publicKey);
-            console.log("Correo de confirmación enviado con éxito");
+            console.log("Correo enviado con éxito a: " + correoDestino);
         } catch (error) {
             console.error("Error al enviar el correo:", error);
         }
     };
 
+    // --- AQUÍ ESTABA EL ERROR (He quitado la palabra suelta) ---
     const handleAprobar = async (reserva) => {
-        // 1. Actualizar en Base de Datos a 'confirmada'
-        const { error } = await supabase
-            .from('reservas')
-            .update({ estado: 'confirmada' })
-            .eq('id', reserva.id);
+        try {
+            const pdfBlob = generarFacturaPDF(reserva);
+            const fileName = `factura_${reserva.id}.pdf`;
 
-        if (!error) {
-            // 2. Si la DB se actualizó, disparamos el correo
-            await enviarEmailConfirmacion(reserva);
-            alert("¡Reserva confirmada! Las fechas se han bloqueado y el cliente ha sido notificado.");
+            // Subir a Supabase (Bucket: facturas)
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('facturas')
+                .upload(fileName, pdfBlob, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('facturas')
+                .getPublicUrl(fileName);
+
+            const { error: dbError } = await supabase
+                .from('reservas')
+                .update({ estado: 'confirmada' })
+                .eq('id', reserva.id);
+
+            if (dbError) throw dbError;
+
+            await enviarEmailConfirmacion(reserva, publicUrl);
+
+            alert("¡Reserva confirmada! Factura enviada al cliente.");
             refresh();
-        } else {
-            alert("Error al actualizar: " + error.message);
+
+        } catch (error) {
+            alert("Error en el proceso: " + error.message);
+            console.error(error);
         }
     };
 
@@ -53,6 +122,7 @@ const InventoryReservas = ({ items, refresh, loading }) => {
         }
     };
 
+    // Si 'loading' te da error de "not defined", asegúrate de que el padre lo pase
     if (loading) return <div className="p-10 text-center font-bold">Cargando reservas...</div>;
 
     return (
@@ -71,12 +141,11 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {items.map(res => (
+                        {items && items.map(res => (
                             <tr key={res.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
                                 <td className="p-5">
                                     <p className="font-bold text-slate-800 uppercase">{res.nombre_cliente}</p>
                                     <p className="text-[10px] text-blue-600 font-bold">{res.propiedad_titulo}</p>
-                                    {/* Cambiado a res.email para que coincida con tu lógica de DB */}
                                     <p className="text-[9px] text-slate-400">{res.email}</p>
                                 </td>
                                 <td className="p-5 text-sm font-medium">
@@ -84,8 +153,8 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                                 </td>
                                 <td className="p-5">
                                     <span className={`px-3 py-1 rounded text-[9px] font-black uppercase ${res.estado === 'confirmada'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-amber-100 text-amber-700'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-amber-100 text-amber-700'
                                         }`}>
                                         {res.estado || 'pendiente'}
                                     </span>
@@ -95,7 +164,7 @@ const InventoryReservas = ({ items, refresh, loading }) => {
                                         <button
                                             onClick={() => handleAprobar(res)}
                                             className="text-green-500 hover:scale-110 transition flex flex-col items-center gap-1"
-                                            title="Confirmar y enviar correo"
+                                            title="Confirmar y enviar factura"
                                         >
                                             <CheckCircle size={20} />
                                             <span className="text-[8px] font-bold">APROBAR</span>
