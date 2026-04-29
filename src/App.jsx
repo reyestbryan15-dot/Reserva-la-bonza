@@ -1,15 +1,29 @@
 import React, { useState, useEffect } from 'react';
+
+// Context
+import { LanguageProvider } from './context/LanguageContext';
+
+// Router
+import AppRouter from './routes/AppRouter';
+
+// Componentes Privados
+// ---------------------------------------------------------
+// OJO: Aquí estaba el error. Antes importabas 'Dashboard', 
+// ahora importamos 'HostLayout' que es el que tiene el menú.
+import HostLayout from './components/admin/host/HostLayout';
+// ---------------------------------------------------------
+
+import AdminPanel from './components/admin/AdminPanel';
+import ElegantLoader from './components/ui/ElegantLoader';
+
+// Backend
 import { supabase } from '../backend/supabaseClient';
 
-// Componentes de Interfaz
-import ElegantLoader from './components/ElegantLoader';
-import AdminPanel from '../src/components/admin/AdminPanel'; // Ajusta la ruta si es necesaria
-import HostLayout from '../src/components/admin/host/HostLayout'; // Ajusta la ruta si es necesaria
-import AppRouter from '../src/routes/AppRouter';      // Ajusta la ruta si es necesaria
-
-// Contexto y Analíticas
-import { LanguageProvider } from './context/LanguageContext';
-import { Analytics } from '@vercel/analytics/react';
+const SOCIOS_EMAILS = [
+  'toncelbryan17@gmail.com',
+  'luboguarnizojoserafa@gmail.com',
+  'labonanzar@gmail.com'
+];
 
 function App() {
   const [user, setUser] = useState(null);
@@ -17,90 +31,65 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Función para cerrar sesión
+  const actualizarEstado = (newSession) => {
+    if (!newSession?.user?.email) {
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      return;
+    }
+    setSession(newSession);
+    setUser(newSession.user);
+
+    const emailUsuario = newSession.user.email.toLowerCase().trim();
+    const esSocio = SOCIOS_EMAILS.includes(emailUsuario);
+    setIsAdmin(esSocio);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
     setIsAdmin(false);
-    window.location.reload();
-  };
-
-  // Función para actualizar el estado tras el login
-  const actualizarEstado = () => {
-    window.location.reload();
+    window.location.href = '/';
   };
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // 1. Obtener sesión inicial
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-
-        if (currentSession) {
-          setSession(currentSession);
-          setUser(currentSession.user);
-
-          // 2. Lógica para identificar si es ADMIN
-          // Si tu correo es el del administrador:
-          if (currentSession.user.email === 'labonanzar@gmail.com') {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error("Error en la autenticación:", error);
-      } finally {
-        // 3. Finalizar la carga con un pequeño delay para suavidad visual
-        setTimeout(() => {
-          setLoading(false);
-        }, 1000);
-      }
+    const obtenerSesion = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) console.log("Error sesión:", error);
+      actualizarEstado(session);
+      setLoading(false);
     };
 
-    checkSession();
+    obtenerSesion();
 
-    // Escuchar cambios en tiempo real (login/logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user?.email === 'labonanzar@gmail.com') {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      actualizarEstado(session);
     });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  // --- RENDERIZADO ---
-
-  // Si está cargando, mostramos la barra azul profesional
-  if (loading) {
-    return <ElegantLoader />;
-  }
+  if (loading) return <ElegantLoader />;
 
   return (
     <LanguageProvider>
       {session && isAdmin ? (
-        // Vista para el Administrador (Tú)
         <AdminPanel session={session} onLogout={handleLogout} />
       ) : session && !isAdmin ? (
-        // Vista para los Hoteles/Anfitriones
+        // -----------------------------------------------------
+        // AQUÍ ESTÁ EL CAMBIO VISUAL:
+        // Usamos HostLayout para ver el menú y las pestañas
         <HostLayout session={session} onLogout={handleLogout} />
+        // -----------------------------------------------------
       ) : (
-        // Vista para Clientes / Login
         <AppRouter
           user={user}
           onLogout={handleLogout}
           onLogin={actualizarEstado}
         />
       )}
-
-      {/* Analíticas de Vercel */}
-      <Analytics />
     </LanguageProvider>
   );
 }

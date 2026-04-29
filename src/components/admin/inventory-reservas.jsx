@@ -4,7 +4,7 @@ import { Trash2, CheckCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 // 1. IMPORTAR LIBRERÍAS PARA PDF
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // HEMOS AGREGADO = false PARA QUE SI NO RECIBE LA PROP, NO DE ERROR
 const InventoryReservas = ({ items = [], refresh = () => { }, loading = false }) => {
@@ -26,7 +26,8 @@ const InventoryReservas = ({ items = [], refresh = () => { }, loading = false })
         doc.text("Santa Marta, Colombia", 15, 45);
         doc.text("Email: labonanzar@gmail.com", 15, 50);
 
-        doc.autoTable({
+        // En lugar de doc.autoTable, usa la función importada directamente:
+        autoTable(doc, {
             startY: 60,
             head: [['Detalle', 'Información']],
             body: [
