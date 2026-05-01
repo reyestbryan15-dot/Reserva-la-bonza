@@ -331,5 +331,15 @@
     "ph_name": "Ex. Villa Sérénité ou Suite Royale",
     "photos_label": "Galerie d'images",
     "upload_btn": "Ajouter des photos"
+  },
+  "payment": {
+    "account_type": "Épargne Bancolombia",
+    "copy_success": "Numéro copié!",
+    "processing": "Traitement...",
+    "secure_payment_notice": "Votre réservation sera confirmée une fois que nous aurons validé le reçu.",
+    "send_receipt": "Envoyer une preuve par WhatsApp",
+    "total_price": "Total à payer",
+    "transfer_instruction": "Copiez le numéro de compte et effectuez le virement",
+    "whatsapp_msg": "Bonjour La Bonanza 👋. Je viens d'effectuer le paiement et j'ai joint mon reçu."
   }
 }

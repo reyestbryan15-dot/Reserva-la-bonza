@@ -35,6 +35,16 @@
         "rights": "Todos los derechos reservados.",
         "egal_title": "Legal"
     },
+    "payment": {
+        "total_price": "Total a Pagar",
+        "transfer_instruction": "Copia el número de cuenta y realiza la transferencia",
+        "account_type": "Ahorros Bancolombia",
+        "send_receipt": "Enviar Comprobante por WhatsApp",
+        "processing": "Procesando...",
+        "secure_payment_notice": "Tu reserva quedará confirmada una vez validemos el comprobante.",
+        "whatsapp_msg": "Hola La Bonanza 👋. Acabo de realizar el pago y adjunto mi comprobante.",
+        "copy_success": "¡Número copiado!"
+    },
     "sales": {
         "title": "Portafolio de Ventas",
         "consult_price": "Consultar Precio",

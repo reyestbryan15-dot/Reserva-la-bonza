@@ -331,5 +331,15 @@
     "ph_name": "前任。宁静别墅或皇家套房",
     "photos_label": "图片库",
     "upload_btn": "添加照片"
+  },
+  "payment": {
+    "account_type": "哥伦比亚银行储蓄银行",
+    "copy_success": "号码已复制！",
+    "processing": "加工...",
+    "secure_payment_notice": "一旦我们验证收据，您的预订将得到确认。",
+    "send_receipt": "通过 WhatsApp 发送证明",
+    "total_price": "总付款",
+    "transfer_instruction": "复制账号并进行转账",
+    "whatsapp_msg": "你好，拉富矿👋。我刚刚付款并附上我的收据。"
   }
 }
