@@ -2,7 +2,7 @@ import React from 'react';
 import { supabase } from '../../../backend/supabaseClient';
 import { Trash2, CheckCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
-import jsPDF from 'jsPDF';
+import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
 
 const InventoryReservas = ({ items = [], refresh = () => { }, loading = false }) => {
