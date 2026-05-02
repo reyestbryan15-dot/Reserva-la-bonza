@@ -1,0 +1,51 @@
+/* Reducir el tamaño general */
+.calendar-compact-wrapper .react-calendar {
+    width: 320px !important;
+    max-width: 100%;
+    border: none !important;
+    background: transparent;
+    font-size: 0.85rem;
+}
+
+.react-calendar__tile {
+    height: 45px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px !important;
+    margin: 2px 0;
+}
+
+/* Día Confirmado (ROJO) */
+.tile-reserved-confirmed {
+    background-color: #ef4444 !important;
+    /* Tailwind red-500 */
+    color: white !important;
+    border-radius: 12px !important;
+    font-weight: bold;
+}
+
+/* Día Pendiente (NARANJA/AMARILLO) */
+.tile-reserved-pending {
+    background-color: #fb923c !important;
+    /* Tailwind orange-400 */
+    color: white !important;
+    border-radius: 12px !important;
+}
+
+/* Día hoy */
+.react-calendar__tile--now {
+    background: #f1f5f9 !important;
+    border: 2px solid #3b82f6 !important;
+    color: #3b82f6 !important;
+}
+
+/* Animación de las tarjetas */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
