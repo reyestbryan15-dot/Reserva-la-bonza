@@ -157,22 +157,38 @@ const PropertyDetail = () => {
             <p className="whitespace-pre-line">{hotel.description || hotel.descripcion}</p>
           </div>
 
-          {/* Amenities traducidos dinámicamente */}
+          {/* Amenities traducidos dinámicamente - SECCIÓN CORREGIDA */}
           <div className="border-y py-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4">{t('details.services')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {hotel.amenities?.map((amenityKey) => {
-                const key = getNormalizedKey(amenityKey);
-                const Item = AMENITY_MAP[key] || AMENITY_MAP.default;
-                return (
-                  <div key={amenityKey} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border">
-                    <Item.icon className="text-blue-600" size={24} />
-                    <span className="font-bold text-gray-700">
-                      {t(`amenities.${Item.labelKey}`, { defaultValue: amenityKey })}
-                    </span>
-                  </div>
-                );
-              })}
+              {Array.isArray(hotel.amenities) ? (
+                // CASO 1: Es un Array (comportamiento normal)
+                hotel.amenities.map((amenityKey) => {
+                  const key = getNormalizedKey(amenityKey);
+                  const Item = AMENITY_MAP[key] || AMENITY_MAP.default;
+                  return (
+                    <div key={amenityKey} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border">
+                      <Item.icon className="text-blue-600" size={24} />
+                      <span className="font-bold text-gray-700">
+                        {t(`amenities.${Item.labelKey}`, { defaultValue: amenityKey })}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : typeof hotel.amenities === 'string' && hotel.amenities.trim().length > 0 ? (
+                // CASO 2: Alguien escribió un texto plano (como "Playa privada fácil acceso")
+                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border col-span-full">
+                  <Sparkles className="text-blue-600" size={24} />
+                  <span className="font-bold text-gray-700">
+                    {hotel.amenities}
+                  </span>
+                </div>
+              ) : (
+                // CASO 3: Está vacío o es nulo
+                <p className="text-gray-400 italic col-span-full">
+                  {t('amenities.no_services', { defaultValue: 'No hay servicios especificados' })}
+                </p>
+              )}
             </div>
           </div>
         </div>

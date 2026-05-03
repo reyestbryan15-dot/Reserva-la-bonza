@@ -9,17 +9,22 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  // 1. ESTADOS INICIALES
+  // 1. ESTADOS INICIALES (Con protección)
   const [startDate, setStartDate] = useState(checkIn ? new Date(checkIn) : null);
   const [endDate, setEndDate] = useState(checkOut ? new Date(checkOut) : null);
-  const [guests, setGuests] = useState(parseInt(numGuests) || 1);
+  const [guests, setGuests] = useState(Math.max(1, parseInt(numGuests) || 1));
 
-  // 2. CONFIGURACIÓN DE COSTOS (Con protección contra nulos)
-  const valorManilla = (property?.costo_manilla < 1000 ? property.costo_manilla * 1000 : property?.costo_manilla) || 25000;
-  const precioBaseNoche = property?.precio_final || property?.precio_noche || 0;
+  // 2. CONFIGURACIÓN DE COSTOS BLINDADA
+  // Si alguien pone un texto en costo_manilla o viene vacío, usamos 25000 por defecto
+  const rawManilla = parseFloat(property?.costo_manilla);
+  const valorManilla = isNaN(rawManilla)
+    ? 25000
+    : (rawManilla < 1000 ? rawManilla * 1000 : rawManilla);
 
-  // 3. CÁLCULO DE NOCHES (Calculado directamente en el render para evitar delays de useEffect)
-  const totalNoches = (startDate && endDate)
+  const precioBaseNoche = parseFloat(property?.precio_final || property?.precio_noche || 0);
+
+  // 3. CÁLCULO DE NOCHES (Seguro contra fechas inválidas)
+  const totalNoches = (startDate instanceof Date && !isNaN(startDate) && endDate instanceof Date && !isNaN(endDate))
     ? Math.max(0, Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24)))
     : 0;
 
@@ -42,25 +47,21 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
       return;
     }
 
-    // Formateamos las fechas a YYYY-MM-DD
     const checkinStr = startDate.toISOString().split('T')[0];
     const checkoutStr = endDate.toISOString().split('T')[0];
 
     try {
-      // Ajustamos la lógica: Una reserva choca si:
-      // (Inicio de la nueva es ANTES del fin de la existente) AND (Fin de la nueva es DESPUÉS del inicio de la existente)
       const { data: conflictos, error } = await supabase
         .from('reservas')
         .select('estado')
-        .eq('propiedad_id', property.id)
-        // Usamos una sintaxis más limpia para evitar el error 400
+        .eq('propiedad_id', property?.id)
         .filter('fecha_llegada', 'lt', checkoutStr)
         .filter('fecha_salida', 'gt', checkinStr);
 
       if (error) throw error;
 
       if (conflictos && conflictos.length > 0) {
-        const tieneConfirmada = conflictos.some(r => r.estado === 'confirmada');
+        const tieneConfirmada = conflictos.some(r => r.estado?.toLowerCase() === 'confirmada');
 
         if (tieneConfirmada) {
           alert("❌ Estas fechas ya están confirmadas. Por favor selecciona otros días.");
@@ -73,16 +74,18 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
         }
       }
 
-      navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(property.titulo || property.nombre)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
+      // Blindamos el título para el encodeURIComponent
+      const propertyTitle = property?.titulo || property?.nombre || "Propiedad";
+
+      navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(propertyTitle)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
 
     } catch (err) {
       console.error("Error validando disponibilidad:", err);
-      // Si falla la red o hay error 400, al menos dejamos que intente reservar 
-      // pero avisamos que no se pudo verificar.
       alert("No se pudo verificar la disponibilidad en tiempo real, pero intentaremos procesar tu solicitud.");
     }
   };
 
+  // --- RENDERING ---
   return (
     <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sticky top-24">
       <div className="mb-6">
@@ -135,12 +138,11 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
         {t('booking.book_now')}
       </button>
 
-      {/* DESGLOSE: Ahora se actualiza al instante al cambiar 'guests' */}
       {totalNoches > 0 && (
-        <div className="space-y-3 pt-4 border-t border-dashed text-sm">
+        <div className="space-y-3 pt-4 border-t border-dashed text-sm animate-in fade-in slide-in-from-bottom-2">
           <div className="flex justify-between text-gray-600">
-            <span className="underline decoration-gray-300">
-              {formatCurrency(precioBaseNoche)} x {totalNoches} noches
+            <span className="underline decoration-gray-300 italic">
+              {formatCurrency(precioBaseNoche)} x {totalNoches} {totalNoches === 1 ? 'noche' : 'noches'}
             </span>
             <span>{formatCurrency(subtotalEstadia)}</span>
           </div>

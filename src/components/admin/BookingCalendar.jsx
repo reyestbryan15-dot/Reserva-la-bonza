@@ -9,11 +9,8 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
     const [selectedId, setSelectedId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // 1. FILTRAR: Solo alojamientos que tienen reservas en la base de datos
     const accommodationsWithBookings = useMemo(() => {
         if (!alojamientos || !reservas) return [];
-
-        // Filtramos usando 'propiedad_id' que es tu columna real
         const idsConReserva = [...new Set(reservas.map(res => res.propiedad_id))];
 
         return alojamientos
@@ -24,12 +21,10 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
             });
     }, [alojamientos, reservas, searchTerm]);
 
-    // 2. Función para pintar los días ocupados según tus columnas
     const getTileClassName = (date, view, activeBookings) => {
         if (view === 'month' && activeBookings.length > 0) {
             const reservation = activeBookings.find(res => {
                 try {
-                    // Usamos tus nombres de columna: fecha_llegada y fecha_salida
                     const start = parseISO(res.fecha_llegada);
                     const end = parseISO(res.fecha_salida);
                     return isWithinInterval(date, { start, end }) || isSameDay(date, start) || isSameDay(date, end);
@@ -37,7 +32,6 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
             });
 
             if (reservation) {
-                // Usamos tu columna 'estado'
                 const estado = reservation.estado?.toUpperCase();
                 if (estado === 'CONFIRMADA' || estado === 'PAGADO') return 'tile-reserved-confirmed';
                 if (estado === 'PENDIENTE') return 'tile-reserved-pending';
@@ -76,14 +70,45 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
                         const isExpanded = selectedId === acc.id;
                         const myBookings = reservas.filter(r => r.propiedad_id === acc.id);
 
+                        // --- MEJORA: PROCESAMIENTO DE IMAGEN (ARRAY O STRING) ---
+                        const rawFoto = myBookings[0]?.propiedad_foto_referencia;
+                        let cleanFoto = null;
+
+                        if (rawFoto) {
+                            if (Array.isArray(rawFoto)) {
+                                cleanFoto = rawFoto[0];
+                            } else if (typeof rawFoto === 'string') {
+                                if (rawFoto.startsWith('[')) {
+                                    try {
+                                        const parsed = JSON.parse(rawFoto);
+                                        cleanFoto = parsed[0];
+                                    } catch (e) {
+                                        cleanFoto = rawFoto.replace(/[\[\]"]/g, '').split(',')[0];
+                                    }
+                                } else {
+                                    cleanFoto = rawFoto;
+                                }
+                            }
+                        }
+
+                        const fotoUrl = cleanFoto ||
+                            acc.imagen_url ||
+                            acc.foto_principal ||
+                            "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400";
+
                         return (
                             <div key={acc.id} className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden transition-all">
-                                {/* CABECERA */}
                                 <div
                                     onClick={() => setSelectedId(isExpanded ? null : acc.id)}
                                     className="p-5 flex items-center gap-5 cursor-pointer hover:bg-slate-50 transition-colors"
                                 >
-                                    <img src={acc.imagen_url || acc.foto_principal} className="w-20 h-20 rounded-[24px] object-cover" alt="" />
+                                    <img
+                                        src={fotoUrl}
+                                        className="w-20 h-20 rounded-[24px] object-cover bg-slate-100"
+                                        alt={acc.nombre}
+                                        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=400" }}
+                                    />
+
                                     <div className="flex-1">
                                         <h3 className="font-bold text-slate-800 text-lg">{acc.nombre || acc.titulo}</h3>
                                         <div className="flex items-center text-slate-400 text-sm mt-1 font-medium">
@@ -95,7 +120,6 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
                                     </div>
                                 </div>
 
-                                {/* CALENDARIO DESPLEGABLE */}
                                 {isExpanded && (
                                     <div className="p-8 border-t border-slate-50 bg-[#f8fafc] flex flex-col lg:flex-row gap-10 items-start justify-center animate-in fade-in zoom-in-95 duration-300">
                                         <div className="calendar-compact-wrapper bg-white p-6 rounded-[32px] shadow-2xl shadow-blue-900/5 border border-white">
@@ -123,7 +147,6 @@ const BookingCalendar = ({ alojamientos, reservas, loading }) => {
                                                 </div>
                                             </div>
 
-                                            {/* Info de la última reserva */}
                                             <div className="p-5 bg-blue-600 rounded-[24px] text-white shadow-lg shadow-blue-200">
                                                 <p className="text-[10px] font-bold uppercase opacity-80 mb-3 tracking-tight">Último movimiento</p>
                                                 <div className="space-y-2">
