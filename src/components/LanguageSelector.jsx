@@ -44,37 +44,38 @@ const LanguageSelector = () => {
     return labels[language] || labels.es;
   };
 
-/* ========================================================================
- * SECCIÓN 4: RENDERIZADO (JSX)
- * ======================================================================== */
+  /* ========================================================================
+   * SECCIÓN 4: RENDERIZADO (JSX)
+   * ======================================================================== */
   return (
     <div className="relative z-50">
-      
-      {/* 4.1 Botón Activador */}
-      <button 
+
+      {/* 4.1 Botón Activador - CORREGIDO */}
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-full 
-          transition-all duration-200 border
-          ${isOpen ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-transparent border-transparent hover:bg-gray-100 text-gray-700'}
-        `}
-        title="Cambiar idioma / Change language"
+    flex items-center gap-1 px-2 py-1.5 rounded-full 
+    transition-all duration-200 border
+    ${isOpen ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-transparent border-transparent hover:bg-gray-100 text-gray-700'}
+  `}
+        title="Cambiar idioma"
       >
-        <Globe size={18} />
-        <span className="hidden md:inline text-lg leading-none">{currentLang.flag}</span>
-        <span className="text-sm font-semibold uppercase tracking-wide">{language}</span>
-        <ChevronDown 
-          size={14} 
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <Globe size={16} />
+        {/* Quitamos el flag y dejamos solo el código una vez, más pequeño */}
+        <span className="text-[11px] font-bold uppercase tracking-tighter">
+          {language}
+        </span>
+        <ChevronDown
+          size={12}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
-
       {/* 4.2 Menú Desplegable */}
       {isOpen && (
         <>
           {/* Overlay invisible para cerrar al hacer clic fuera */}
-          <div 
-            className="fixed inset-0 z-10 cursor-default" 
+          <div
+            className="fixed inset-0 z-10 cursor-default"
             onClick={() => setIsOpen(false)}
           />
 
@@ -85,10 +86,10 @@ const LanguageSelector = () => {
                 {getHeaderLabel()}
               </span>
             </div>
-            
+
             {LANGUAGES.map((lang) => {
               const isActive = language === lang.code;
-              
+
               return (
                 <button
                   key={lang.code}
@@ -101,7 +102,7 @@ const LanguageSelector = () => {
                       {lang.label}
                     </span>
                   </div>
-                  
+
                   {isActive && <Check size={16} className="text-indigo-600" />}
                 </button>
               );

@@ -19,6 +19,8 @@
         "home": "Inicio",
         "properties": "Propiedades",
         "sales": "Ventas",
+        "tours": "Tours",
+        "services": "Servicios",
         "about": "Sobre Nosotros",
         "contact": "Contacto"
     },
@@ -319,8 +321,8 @@
         "wtc_modal_title": "Documento de Respaldo Oficial WTC",
         "wtc_modal_footer": "Este documento certifica a Reserva La Bonanza S.A.S como oficina de apoyo autorizada en Santa Marta.",
         "wtc_hover_label": "Ver Aval",
-        "legal_label": "LEGALIDAD",
-        "legal_title": "LEGALIDAD",
+        "legal_label": "Seguridad Jurídica y Transparencia",
+        "legal_title": "Seguridad Jurídica y Transparencia",
         "legal_full_description": "Reservas La Bonanza SAS, es una agencia operadora turística identificada con el NIT 901593475-7, registrada bajo el RNT 114606 del Ministerio de Desarrollo de Industria y Comercio, matriculada en la Cámara de Comercio de Santa Marta bajo el Nro. 254869, cumplimos con todos los requisitos de Ley, con ámbito de operación Nacional e Internacional."
     },
     "admin": {

@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 
-// Páginas (Asumiendo que estas siguen en la raíz de components o muévelas a pages si quieres)
+// Páginas existentes
 import HeroSection from '../components/HeroSection';
 import GridAlojamientos from '../components/GridAlojamientos';
 import PropertyDetail from '../components/PropertyDetail';
@@ -16,6 +16,10 @@ import Ventas from "../components/Ventas";
 import CancelarReserva from "../components/CancelarReserva";
 import Contacto from '../components/Contacto';
 import ResetPassword from '../components/ResetPassword';
+
+// NUEVOS COMPONENTES (Asegúrate de crearlos con los códigos que te pasé)
+import ToursPage from '../components/ToursPage';
+import ServiciosHelp from '../components/ServiciosHelp';
 
 // Auth
 import LoginPage from '../components/auth/LoginPage';
@@ -32,11 +36,12 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/" element={
             <>
               <HeroSection />
+              {/* Sugerencia: Puedes poner aquí el componente de ServiciosHelp 
+                  para que la gente lo vea apenas entre, o dejarlo solo en su ruta */}
               <GridAlojamientos limit={3} />
             </>
           } />
 
-          <Route path="/cancelar" element={<div className="text-5xl font-black p-20">ENTRÓ A CANCELAR</div>} />
           <Route path="/propiedades" element={<GridAlojamientos />} />
           <Route path="/propiedad/:id" element={<PropertyDetail />} />
           <Route path="/reservar" element={<ReservationPage />} />
@@ -46,7 +51,11 @@ const AppRouter = ({ user, onLogout, onLogin }) => {
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/tours" element={<ToursPage />} />
+          <Route path="/servicios" element={<ServiciosHelp />} />
 
+          {/* Ruta de cancelación corregida */}
+          <Route path="/cancelar" element={<CancelarReserva />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
