@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Tag, Bell, LogOut, Calendar, Compass } from 'lucide-react'; // Añadimos Compass
+import { LayoutGrid, Tag, Bell, LogOut, Calendar, Compass, CalendarDays } from 'lucide-react'; // Añadimos CalendarDays
 
 const SidebarPC = ({ activeTab, setActiveTab, onLogout }) => (
     <aside className="w-72 bg-[#0f172a] text-white hidden md:flex flex-col h-screen sticky top-0 shadow-2xl">
@@ -17,14 +17,17 @@ const SidebarPC = ({ activeTab, setActiveTab, onLogout }) => (
                 <Bell size={20} /> Reservas
             </button>
 
-            {/* --- 🌟 NUEVO BOTÓN DE TOURS (Abajo de Reservas) --- */}
             <button onClick={() => setActiveTab('tours')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all ${activeTab === 'tours' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800'}`}>
                 <Compass size={20} /> Tours
             </button>
 
-            {/* --- BOTÓN DE CALENDARIO (Arriba de Tours en código, abajo visualmente) --- */}
             <button onClick={() => setActiveTab('calendario')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all ${activeTab === 'calendario' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800'}`}>
                 <Calendar size={20} /> Calendario
+            </button>
+
+            {/* --- 🌟 NUEVO BOTÓN DE BLOQUEOS (AIRBNB/BOOKING) --- */}
+            <button onClick={() => setActiveTab('bloqueos')} className={`flex items-center gap-3 p-4 rounded-xl font-bold transition-all ${activeTab === 'bloqueos' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-slate-400 hover:bg-slate-800'}`}>
+                <CalendarDays size={20} /> Bloquear Fechas
             </button>
         </nav>
 

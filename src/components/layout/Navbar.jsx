@@ -80,7 +80,6 @@ const Navbar = ({ user, onLogout }) => {
               </div>
             </div>
 
-
             {/* C. MÓVIL */}
             <div className="md:hidden flex items-center gap-1">
               <LanguageSelector />
@@ -91,9 +90,9 @@ const Navbar = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* MENÚ MÓVIL (Sin cambios) */}
+        {/* MENÚ MÓVIL (Con scroll automático y sección de login agregada) */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b shadow-2xl z-50">
+          <div className="md:hidden absolute top-20 left-0 w-full bg-white border-b shadow-2xl z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
             <div className="flex flex-col p-6 space-y-4">
               {NAV_ITEMS.map((item) => (
                 <Link
@@ -103,6 +102,32 @@ const Navbar = ({ user, onLogout }) => {
                   {t(item.key)}
                 </Link>
               ))}
+
+              {/* LÍNEA DIVISORIA Y SECCIÓN DE SESIÓN PARA MÓVILES */}
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                {user ? (
+                  <div className="flex items-center justify-between p-2">
+                    <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-2 text-gray-800 font-bold text-lg">
+                      <User size={22} />
+                      <span>Mi Cuenta</span>
+                    </Link>
+                    <button
+                      onClick={() => { onLogout(); closeMobileMenu(); }}
+                      className="text-gray-500 hover:text-red-600 p-2"
+                    >
+                      <LogOut size={22} />
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="w-full bg-black text-white py-3 rounded-full text-center text-base font-bold hover:bg-gray-800 transition-all block"
+                  >
+                    {t('navbar.login')}
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}

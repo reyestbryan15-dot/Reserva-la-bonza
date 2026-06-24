@@ -15,7 +15,6 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
   const [guests, setGuests] = useState(Math.max(1, parseInt(numGuests) || 1));
 
   // 2. CONFIGURACIÓN DE COSTOS BLINDADA
-  // Si alguien pone un texto en costo_manilla o viene vacío, usamos 25000 por defecto
   const rawManilla = parseFloat(property?.costo_manilla);
   const valorManilla = isNaN(rawManilla)
     ? 25000
@@ -23,7 +22,7 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
 
   const precioBaseNoche = parseFloat(property?.precio_final || property?.precio_noche || 0);
 
-  // 3. CÁLCULO DE NOCHES (Seguro contra fechas inválidas)
+  // 3. CÁLCULO DE NOCHES
   const totalNoches = (startDate instanceof Date && !isNaN(startDate) && endDate instanceof Date && !isNaN(endDate))
     ? Math.max(0, Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24)))
     : 0;
@@ -51,6 +50,22 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
     const checkoutStr = endDate.toISOString().split('T')[0];
 
     try {
+      // 🌟 EXTRA: VALIDACIÓN DE BLOQUEOS MANUALES DE ADMINISTRACIÓN (Airbnb/Booking)
+      const { data: bloqueos, error: errorBloqueos } = await supabase
+        .from('bloqueos_admin')
+        .select('id')
+        .eq('alojamientos', property?.id) // Usando el nombre correcto de tu columna renombrada
+        .filter('fecha_llegada', 'lt', checkoutStr)
+        .filter('fecha_salida', 'gt', checkinStr);
+
+      if (errorBloqueos) throw errorBloqueos;
+
+      if (bloqueos && bloqueos.length > 0) {
+        alert("Ya estos días están reservados. Disculpa la molestia, ¿podrías por favor seleccionar otros días?");
+        return;
+      }
+
+      // 🌟 VALIDACIÓN NORMAL DE RESERVAS EXISTENTES
       const { data: conflictos, error } = await supabase
         .from('reservas')
         .select('estado')
@@ -74,9 +89,7 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
         }
       }
 
-      // Blindamos el título para el encodeURIComponent
       const propertyTitle = property?.titulo || property?.nombre || "Propiedad";
-
       navigate(`/reservar?propertyId=${property.id}&propertyName=${encodeURIComponent(propertyTitle)}&checkin=${checkinStr}&checkout=${checkoutStr}&guests=${guests}&price=${subtotalEstadia}&manillas=${costoTotalManillas}`);
 
     } catch (err) {
@@ -85,7 +98,6 @@ const BookingCard = ({ property, excludedDates, checkIn, checkOut, numGuests }) 
     }
   };
 
-  // --- RENDERING ---
   return (
     <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 sticky top-24">
       <div className="mb-6">

@@ -5,6 +5,7 @@ import SidebarMovil from './sidebar-movil';
 import InventoryAlquiler from './inventory-alquiler';
 import InventoryVentas from './inventory-ventas';
 import InventoryReservas from './inventory-reservas';
+import InventoryBloqueos from './InventoryBloqueos'; // 🌟 NUEVO COMPONENTE DE UTILERÍA INDEPENDIENTE
 
 // IMPORTAMOS TUS DOS COMPONENTES DE TOURS INDEPENDIENTES
 import ToursDesktop from '../../components/admin/ToursDesktop';
@@ -20,8 +21,8 @@ import { Plus, X, Check, Search, AlertTriangle, Upload, Image as ImageIcon } fro
 const AdminPanel = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('alquiler');
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false); // Estado de carga de fotos
-  const [data, setData] = useState({ alquiler: [], ventas: [], reservas: [] });
+  const [uploading, setUploading] = useState(false);
+  const [data, setData] = useState({ alquiler: [], ventas: [], reservas: [], bloqueos: [] });
 
   // ESTADOS PROPIOS PARA LA GESTION DE TOURS
   const [tours, setTours] = useState([]);
@@ -43,11 +44,13 @@ const AdminPanel = ({ onLogout }) => {
       const { data: vnt } = await supabase.from('ventas_propiedades').select('*');
       const { data: res } = await supabase.from('reservas').select('*').order('created_at', { ascending: false });
       const { data: trs } = await supabase.from('tours').select('*').order('created_at', { ascending: false });
+      const { data: blq } = await supabase.from('bloqueos_admin').select('*, alojamientos(titulo)').order('created_at', { ascending: false });
 
       setData({
         alquiler: alq || [],
         ventas: vnt || [],
-        reservas: res || []
+        reservas: res || [],
+        bloqueos: blq || []
       });
 
       setTours(trs || []);
@@ -65,7 +68,7 @@ const AdminPanel = ({ onLogout }) => {
   // FUNCIONES DE CONTROL PARA CREAR, EDITAR Y ELIMINAR TOURS
   const handleCreateOpen = () => {
     setSelectedTour(null);
-    setImagenesUrls([]); // Inicia vacio de imagenes
+    setImagenesUrls([]);
     setFormData({ titulo: '', ubicacion: '', precio: '', duracion: '', tipo_servicio: '', beneficiosInput: '', activo: true });
     setIsFormOpen(true);
   };
@@ -73,7 +76,7 @@ const AdminPanel = ({ onLogout }) => {
   const handleEditOpen = (tour) => {
     if (!tour) return;
     setSelectedTour(tour);
-    setImagenesUrls(Array.isArray(tour.imagenes) ? tour.imagenes : []); // Guardamos las URLs sin mostrarlas en inputs
+    setImagenesUrls(Array.isArray(tour.imagenes) ? tour.imagenes : []);
     setFormData({
       titulo: tour.titulo || '',
       ubicacion: tour.ubicacion || '',
@@ -86,7 +89,6 @@ const AdminPanel = ({ onLogout }) => {
     setIsFormOpen(true);
   };
 
-  // 🌟 SUBIDA AUTOMATICA AL STORAGE DE SUPABASE
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -96,19 +98,16 @@ const AdminPanel = ({ onLogout }) => {
 
     for (const file of files) {
       try {
-        // Creamos un nombre único para el archivo basado en el tiempo exacto
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
         const filePath = `tours/${fileName}`;
 
-        // 1. Subir el binario al bucket llamado 'tours'
         const { error: uploadError } = await supabase.storage
-          .from('tours') // ⚠️ Asegúrate de tener un Bucket creado público en Supabase con este nombre
+          .from('tours')
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
-        // 2. Obtener la URL publica generada por el Storage
         const { data: publicUrlData } = supabase.storage
           .from('tours')
           .getPublicUrl(filePath);
@@ -125,7 +124,6 @@ const AdminPanel = ({ onLogout }) => {
     setUploading(false);
   };
 
-  // Quitar una foto de la lista de previsualizacion antes de guardar
   const handleRemoveImage = (indexToRemove) => {
     setImagenesUrls(imagenesUrls.filter((_, index) => index !== indexToRemove));
   };
@@ -146,7 +144,7 @@ const AdminPanel = ({ onLogout }) => {
       duracion: formData.duracion,
       tipo_servicio: formData.tipo_servicio,
       beneficios: beneficiosArray,
-      imagenes: imagenesUrls, // 🌟 Se inyecta la coleccion de URLs limpias creadas desde el Storage
+      imagenes: imagenesUrls,
       activo: formData.activo
     };
 
@@ -233,6 +231,16 @@ const AdminPanel = ({ onLogout }) => {
               </div>
             </div>
           )}
+
+          {/* 🌟 LLAMADO LIMPIO AL NUEVO COMPONENTE MODULAR */}
+          {activeTab === 'bloqueos' && (
+            <InventoryBloqueos
+              items={data.bloqueos}
+              alojamientos={data.alquiler}
+              refresh={fetchData}
+              loading={loading}
+            />
+          )}
         </div>
       </main>
 
@@ -273,11 +281,9 @@ const AdminPanel = ({ onLogout }) => {
                   <textarea value={formData.beneficiosInput} onChange={(e) => setFormData({ ...formData, beneficiosInput: e.target.value })} rows="2" className="w-full px-4 py-2 rounded-xl border text-sm"></textarea>
                 </div>
 
-                {/* 🌟 SECCIÓN REDISEÑADA Y SEGURA: SUBIDA DE IMÁGENES AL STORAGE */}
                 <div className="md:col-span-2 border-t pt-2 border-gray-100">
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Fotos del Producto</label>
 
-                  {/* Grid de previsualización estética */}
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
                     {imagenesUrls.map((url, idx) => (
                       <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden border bg-gray-50 group shadow-sm">
@@ -292,7 +298,6 @@ const AdminPanel = ({ onLogout }) => {
                       </div>
                     ))}
 
-                    {/* Botón de carga interactivo */}
                     <label className={`border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer aspect-[4/3] p-2 transition-all ${uploading ? 'bg-slate-50 border-indigo-300 animate-pulse' : 'border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/30'}`}>
                       <input
                         type="file"
